@@ -5320,9 +5320,20 @@ if err != nil {
 
 
 </main>
-<div class="sidebar-image">
-  <img src="Golang.png" alt="System Overview" />
+
+<!-- Thay thế div cũ .sidebar-image -->
+<a href="#img-popup" class="zoom-link">
+  <img src="Golang.png" alt="Golang Mindmap" class="preview-image" />
+</a>
+
+<!-- Fullscreen modal -->
+<div id="img-popup" class="img-modal">
+  <a href="#" class="img-close"></a>
+  <img src="Golang.png" alt="Fullscreen Mindmap" />
 </div>
+<!-- <div class="sidebar-image">
+  <img src="Golang.png" alt="System Overview" />
+</div> -->
   <script src="main.js"></script>
 </body>
 </html>
