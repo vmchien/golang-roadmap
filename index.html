@@ -243,7 +243,7 @@ Kiểu dữ liệu UTF-8 bất biến</p></li>
 - Phân biệt khi truyền dữ liệu qua hàm: array (copy toàn bộ) vs slice (chia sẻ vùng nhớ)</p>
 
 
-<h2>🎯 Câu hỏi phỏng vấn (Core + Senior)</h2>
+<h2>🎯 Câu hỏi phỏng vấn </h2>
 <ul>
   <li>
     <strong>Câu hỏi:</strong> Sự khác nhau giữa <code>array</code> và <code>slice</code> trong Go là gì?
@@ -367,7 +367,7 @@ for idx, val := range nums {
   <li>Go khuyến khích viết code đơn giản: <code>switch</code> thay vì nhiều <code>if</code> lồng nhau.</li>
   <li><code>range</code> rất mạnh với slice, map, channel — hỗ trợ clean code khi lặp.</li>
 </ul>
-<h2>🎯 Câu hỏi phỏng vấn (Core + Senior)</h2>
+<h2>🎯 Câu hỏi phỏng vấn </h2>
 <ul>
   <li>
     <strong>Câu hỏi:</strong> Go không có <code>while</code> hay <code>do-while</code> vì sao?
@@ -475,7 +475,7 @@ fmt.Println(sum(nums...)) // cần dấu ...
   <li>Go không hỗ trợ default parameter — variadic function kết hợp với pattern giúp lấp chỗ trống này.</li>
 </ul>
 
-<h2>🎯 Câu hỏi phỏng vấn (Core + Senior)</h2>
+<h2>🎯 Câu hỏi phỏng vấn </h2>
 <ul>
   <li>
     <strong>Câu hỏi:</strong> Go có hỗ trợ <code>function as first-class citizen</code> không?
@@ -554,7 +554,7 @@ var f float64 = 3.99
 i := int(f) // ép kiểu rõ ràng
 </code></pre>
 
-<h2>🎯 Câu hỏi phỏng vấn (Core + Senior)</h2>
+<h2>🎯 Câu hỏi phỏng vấn </h2>
 <ul>
   <li>
     <strong>Câu hỏi:</strong> Sự khác biệt giữa <code>slice</code> và <code>array</code> là gì?
@@ -647,7 +647,7 @@ type Admin struct {
 }
 </code></pre>
 
-<h2>🎯 Câu hỏi phỏng vấn (Core + Senior)</h2>
+<h2>🎯 Câu hỏi phỏng vấn </h2>
 <ul>
   <li>
     <strong>Câu hỏi:</strong> Khác biệt giữa value receiver và pointer receiver?
@@ -741,7 +741,7 @@ func inspect(i interface{}) {
     }
 }
 </code></pre>
-<h2>🎯 Câu hỏi phỏng vấn (Core + Senior)</h2>
+<h2>🎯 Câu hỏi phỏng vấn </h2>
 <ul>
   <li>
     <strong>Câu hỏi:</strong> Interface trong Go lưu trữ những gì?
@@ -834,7 +834,7 @@ myapp/
 │   └── math.go  (package util)
 </code></pre>
 
-<h2>🎯 Câu hỏi phỏng vấn (Core + Senior)</h2>
+<h2>🎯 Câu hỏi phỏng vấn </h2>
 <ul>
   <li>
     <strong>Câu hỏi:</strong> Sự khác nhau giữa <code>package</code> và <code>module</code> trong Go là gì?
@@ -1034,7 +1034,7 @@ func main() {
 }
 </code></pre>
 
-<h2>🎯 Câu hỏi phỏng vấn (Core + Senior)</h2>
+<h2>🎯 Câu hỏi phỏng vấn </h2>
 <ul>
   <li>
     <strong>Câu hỏi:</strong> Khi nào goroutine bị leak? Làm sao phát hiện?
@@ -1222,7 +1222,7 @@ func main() {
   <li><strong>Tips:</strong> Luôn unlock bằng <code>defer</code>, tránh quên và gây block toàn chương trình.</li>
 </ul>
 
-<h2>🎯 Câu hỏi phỏng vấn (Core + Senior)</h2>
+<h2>🎯 Câu hỏi phỏng vấn </h2>
 <ul>
   <li>
     <strong>Câu hỏi:</strong> Mutex trong Go hoạt động như thế nào? Có thể gây deadlock không?
@@ -1428,7 +1428,7 @@ func main() {
 </ul>
 
 
-<h2>🎯 Câu hỏi phỏng vấn (Core + Senior)</h2>
+<h2>🎯 Câu hỏi phỏng vấn </h2>
 <ul>
   <li>
     <strong>Câu hỏi:</strong> Context trong Go được thiết kế để giải quyết vấn đề gì?
@@ -1606,7 +1606,7 @@ func runJob(ctx context.Context) {
   <li><strong>Graceful shutdown</strong>: bắt buộc ở service production — tránh mất dữ liệu, close connection đúng cách.</li>
 </ul>
 
-<h2>🎯 Câu hỏi phỏng vấn (Core + Senior)</h2>
+<h2>🎯 Câu hỏi phỏng vấn </h2>
 <ul>
   <li>
     <strong>Câu hỏi:</strong> Vì sao Go không dùng try-catch như các ngôn ngữ khác?
@@ -1777,7 +1777,7 @@ func main() {
   <li>Kết hợp với tools như <code>ELK stack</code>, <code>Grafana Loki</code> để visualize và alert.</li>
 </ul>
 
-<h2>🎯 Câu hỏi phỏng vấn (Core + Senior)</h2>
+<h2>🎯 Câu hỏi phỏng vấn </h2>
 <ul>
   <li>
     <strong>Câu hỏi:</strong> Vì sao nên dùng structured logging thay vì <code>fmt.Println</code>?
@@ -1925,7 +1925,7 @@ func TestAdd(t *testing.T) {
   <li>Dùng <code>assert</code> libs như <code>stretchr/testify</code> khi test lớn.</li>
 </ul>
 
-<h2>🎯 Câu hỏi phỏng vấn (Core + Senior)</h2>
+<h2>🎯 Câu hỏi phỏng vấn </h2>
 <ul>
   <li>
     <strong>Câu hỏi:</strong> Khi nào nên dùng Table-Driven Test trong Go?
@@ -2106,7 +2106,7 @@ go func() {
   <li>Viết log theo traceID để dễ theo dấu goroutine trong production</li>
 </ul>
 
-<h2>🎯 Câu hỏi phỏng vấn (Core + Senior)</h2>
+<h2>🎯 Câu hỏi phỏng vấn </h2>
 <ul>
   <li>
     <strong>Câu hỏi:</strong> Race condition là gì? Khi nào xảy ra trong Go?
@@ -2239,7 +2239,7 @@ func heapAlloc() *int {
   <li>Chia nhỏ function để giúp compiler nhận ra vùng không cần escape.</li>
 </ul>
 
-<h2>🎯 Câu hỏi phỏng vấn (Core + Senior)</h2>
+<h2>🎯 Câu hỏi phỏng vấn </h2>
 <ul>
   <li>
     <strong>Câu hỏi:</strong> Stack và Heap khác nhau như thế nào trong Go?
@@ -2410,7 +2410,7 @@ Không dùng cho object sống lâu hoặc mang state quan trọng.</code></pre>
 
 
 
-<h2>🎯 Câu hỏi phỏng vấn (Core + Senior)</h2>
+<h2>🎯 Câu hỏi phỏng vấn </h2>
 <ul>
   <li>
     <strong>Câu hỏi:</strong> Garbage Collector (GC) trong Go hoạt động như thế nào?
@@ -2548,7 +2548,7 @@ GOOS=windows GOARCH=386 go build -o app.exe
 </ul>
 
 
-<h2>🎯 Câu hỏi phỏng vấn (Core + Senior)</h2>
+<h2>🎯 Câu hỏi phỏng vấn </h2>
 <ul>
   <li>
     <strong>Câu hỏi:</strong> Go biên dịch code như thế nào? Có qua linker không?
@@ -2755,7 +2755,7 @@ func Filter[T any](in []T, predicate func(T) bool) []T {
   <li>Dùng generics kết hợp interface để enforce behavior rõ ràng</li>
 </ul>
 
-<h2>🎯 Câu hỏi phỏng vấn (Core + Senior)</h2>
+<h2>🎯 Câu hỏi phỏng vấn </h2>
 <ul>
   <li>
     <strong>Câu hỏi:</strong> Go hỗ trợ Generics từ phiên bản nào? Vì sao trước đây không có?
@@ -3005,7 +3005,7 @@ traceID := md["x-trace-id"]
   <li>Dùng interceptor để chia nhỏ concern (log, validate, panic recovery)</li>
   <li>Ưu tiên bidirectional stream cho các use case realtime (chat, tracking...)</li>
 </ul>
-<h2>🎯 Câu hỏi phỏng vấn (Core + Senior)</h2>
+<h2>🎯 Câu hỏi phỏng vấn </h2>
 
 <h3>🔹 REST API</h3>
 <ul>
@@ -3153,7 +3153,7 @@ fmt.Printf("%+v\\n", err) // đầy đủ stack trace
 
 
 
-<h2>🎯 Câu hỏi phỏng vấn (Core + Senior)</h2>
+<h2>🎯 Câu hỏi phỏng vấn </h2>
 
 <h3>🔹 Error Wrapping & Stacktrace</h3>
 <ul>
@@ -3280,7 +3280,7 @@ run:
 </ul>
 
 
-<h2>🎯 Câu hỏi phỏng vấn (Core + Senior)</h2>
+<h2>🎯 Câu hỏi phỏng vấn </h2>
 
 <h3>🔹 Kiểm tra & định dạng code</h3>
 <ul>
@@ -3467,7 +3467,7 @@ func WithPort(p int) Option {
 </ul>
 
 
-<h2>🎯 Câu hỏi phỏng vấn (Core + Senior)</h2>
+<h2>🎯 Câu hỏi phỏng vấn </h2>
 
 <h3>🔹 Tổng quan Design Pattern</h3>
 <ul>
@@ -3695,7 +3695,7 @@ func square(in <-chan int) <-chan int {
 </ul>
 
 
-<h2>🎯 Câu hỏi phỏng vấn (Core + Senior)</h2>
+<h2>🎯 Câu hỏi phỏng vấn </h2>
 
 <h3>🔹 Tổng quan mô hình xử lý song song</h3>
 <ul>
@@ -3852,7 +3852,7 @@ Fan-in: nhiều nguồn dữ liệu hợp nhất lại 1 channel out.</code></pr
   <li>Structured logging để trace behavior nguy hiểm</li>
 </ul>
 
-<h2>🎯 Câu hỏi phỏng vấn (Core + Senior)</h2>
+<h2>🎯 Câu hỏi phỏng vấn </h2>
 
 <h3>🔐 Secure Coding</h3>
 <ul>
