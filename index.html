@@ -1,0 +1,474 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Roadmap Golang - Mục 1</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <nav>
+    
+<h2>🧭 Mục lục</h2>
+<ul>
+  <li><strong>Phần I – Nền tảng cơ bản (Beginner)</strong>
+    <ul>
+      <li><a href="#1-kiểu-dữ-liệu-cơ-bản-và-khai-báo-biến">1. Kiểu dữ liệu cơ bản và khai báo biến</a></li>
+      <li><a href="#2-cấu-trúc-điều-kiện-và-vòng-lặp">2. Cấu trúc điều kiện và vòng lặp</a></li>
+      <li><a href="#3-hàm-closure-và-hàm-variadic">3. Hàm, Closure, và Hàm Variadic</a></li>
+      <li><a href="#4-slice-map-array-và-type-casting">4. Slice, Map, Array và Type Casting</a></li>
+      <li><a href="#5-struct-method-và-embedded-struct">5. Struct, Method, và Embedded Struct</a></li>
+      <li><a href="#6-interface-và-type-assertion">6. Interface và Type Assertion</a></li>
+      <li><a href="#7-module-package-và-go-mod">7. Module, Package và go mod</a></li>
+    </ul>
+  </li>
+  <li><strong>Phần II – Tư duy lập trình trung cấp (Intermediate)</strong>
+    <ul>
+      <li><a href="#8-goroutine-và-channel">8. Goroutine và Channel</a></li>
+      <li><a href="#9-đồng-bộ-hoá-với-mutex-rwmutex-waitgroup">9. Đồng bộ hoá với Mutex, RWMutex, WaitGroup</a></li>
+      <li><a href="#10-context-và-lifecycle-control">10. Context và Lifecycle Control</a></li>
+      <li><a href="#11-error-handling-và-panicrecover">11. Error Handling và Panic/Recover</a></li>
+      <li><a href="#12-logging-nâng-cao-với-logrus-zap-zerolog">12. Logging nâng cao với logrus, zap, zerolog</a></li>
+      <li><a href="#13-testing-benchmark-table-driven-test">13. Testing, Benchmark, Table-Driven Test</a></li>
+      <li><a href="#14-debugging-race-condition-deadlock">14. Debugging, Race Condition, Deadlock</a></li>
+    </ul>
+  </li>
+  <li><strong>Phần III – Kiến thức chuyên sâu và phỏng vấn Senior</strong>
+    <ul>
+      <li><a href="#15-memory-management--escape-analysis">15. Memory Management & Escape Analysis</a></li>
+      <li><a href="#16-garbage-collection-và-runtime-scheduler">16. Garbage Collection và Runtime Scheduler</a></li>
+      <li><a href="#17-build-system-và-cross-compilation">17. Build System và Cross Compilation</a></li>
+      <li><a href="#18-generics-type-parameter-và-constraint">18. Generics: Type Parameter và Constraint</a></li>
+      <li><a href="#19-api--middleware-rest-grpc-interceptor">19. API & Middleware: REST, gRPC, Interceptor</a></li>
+      <li><a href="#20-error-wrapping-stacktrace-và-structured-logging">20. Error Wrapping, Stacktrace, và Structured Logging</a></li>
+      <li><a href="#21-staticcheck-golangci-lint-go-vet-go-fmt">21. Staticcheck, GolangCI-Lint, go vet, go fmt</a></li>
+      <li><a href="#22-design-patterns-trong-go">22. Design Patterns trong Go</a></li>
+      <li><a href="#23-secure-coding-và-cicd-workflow">23. Secure Coding và CI/CD Workflow</a></li>
+      <li><a href="#24-system-design-worker-pool-fan-inout-pipeline">24. System Design: Worker Pool, Fan-in/out, Pipeline</a></li>
+      <li><a href="#25-distributed-systems-redis-kafka-envoyproxy">25. Distributed Systems: Redis, Kafka, EnvoyProxy</a></li>
+    </ul>
+  </li>
+</ul>
+
+  </nav>
+  <main>
+    <h1 id="1-kiểu-dữ-liệu-cơ-bản-và-khai-báo-biến">✅ 1. Kiểu dữ liệu cơ bản và khai báo biến</h1>
+
+<hr />
+
+<p>Trong Golang, việc hiểu rõ <strong>kiểu dữ liệu</strong> và <strong>cách khai báo biến</strong> là bước nền tảng không thể thiếu. Từ việc xác định giá trị cụ thể được lưu trữ ở đâu trong bộ nhớ (stack vs heap), đến cách Go runtime tối ưu hóa truy cập, mọi thứ đều bắt đầu từ đây.</p>
+
+<p>Ngôn ngữ Go có các nhóm dữ liệu chính:
+- <strong>Số nguyên (Integer)</strong>: <code>int</code>, <code>int8</code>, <code>int16</code>, <code>int32</code>, <code>int64</code>, và các biến thể không dấu <code>uint*</code>
+- <strong>Số thực (Floating Point)</strong>: <code>float32</code>, <code>float64</code>
+- <strong>Boolean</strong>: <code>true</code>, <code>false</code>
+- <strong>Chuỗi (String)</strong>: kiểu dữ liệu UTF-8 bất biến
+- <strong>Ký tự đặc biệt</strong>: <code>byte</code> (alias của <code>uint8</code>), <code>rune</code> (alias của <code>int32</code>, đại diện cho Unicode code point)
+- <strong>Cấu trúc dữ liệu tĩnh/động</strong>: <code>array</code>, <code>slice</code></p>
+
+<hr />
+
+
+
+<h2>🧠 Khái niệm tổng quát</h2>
+
+<p>Trong Golang, việc hiểu rõ <strong>kiểu dữ liệu</strong> và <strong>cách khai báo biến</strong> là bước nền tảng không thể thiếu. Từ việc xác định giá trị cụ thể được lưu trữ ở đâu trong bộ nhớ (stack vs heap), đến cách Go runtime tối ưu hóa truy cập, mọi thứ đều bắt đầu từ đây.</p>
+
+<p>Ngôn ngữ Go có các nhóm dữ liệu chính:</p>
+
+<ul>
+<li><p><strong>Số nguyên (Integer)</strong>:<br />
+<code>int</code>, <code>int8</code>, <code>int16</code>, <code>int32</code>, <code>int64</code> và các biến thể không dấu như <code>uint</code>, <code>uint8</code>, <code>uint16</code>, <code>uint32</code>, <code>uint64</code></p></li>
+<li><p><strong>Số thực (Floating Point)</strong>:<br />
+<code>float32</code>, <code>float64</code></p></li>
+<li><p><strong>Boolean</strong>:<br />
+<code>true</code>, <code>false</code></p></li>
+<li><p><strong>Chuỗi (String)</strong>:<br />
+Kiểu dữ liệu UTF-8 bất biến</p></li>
+<li><p><strong>Ký tự đặc biệt</strong>:<br />
+<code>byte</code> (alias của <code>uint8</code>), <code>rune</code> (alias của <code>int32</code>, đại diện cho Unicode code point)</p></li>
+<li><p><strong>Cấu trúc dữ liệu tĩnh/động</strong>:<br />
+<code>array</code>, <code>slice</code></p></li>
+</ul>
+
+<h2>🔍 Phân tích chuyên sâu</h2>
+
+<ul>
+<li><code>int</code> là kiểu phụ thuộc kiến trúc máy (32-bit hoặc 64-bit). Dùng mặc định nhưng <strong>nên rõ ràng khi cần tính toán chính xác kích thước bộ nhớ</strong>.</li>
+<li><code>string</code> trong Go là immutable — mọi thao tác như cắt, nối chuỗi đều tạo bản sao mới.</li>
+<li><code>rune</code> đại diện 1 ký tự Unicode, dùng để xử lý ký tự đa byte như tiếng Việt, emoji.</li>
+<li><code>slice</code> không phải là mảng. Nó là một “view” gồm: pointer tới underlying array, độ dài và capacity. Rất nhẹ, dễ truyền qua hàm mà không copy dữ liệu.</li>
+<li><code>const</code> được xử lý ở thời điểm compile. Giá trị <code>const</code> không chiếm vùng nhớ runtime.</li>
+</ul>
+
+<hr />
+
+<h2>💡 Ví dụ: Các kiểu dữ liệu</h2>
+
+<div class="codehilite">
+<pre><span></span><code><span class="kn">package</span><span class="w"> </span><span class="nx">main</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="s">&quot;fmt&quot;</span>
+
+<span class="kd">func</span><span class="w"> </span><span class="nx">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">var</span><span class="w"> </span><span class="nx">age</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mi">30</span><span class="w">              </span><span class="c1">// biến kiểu số nguyên, 32 hoặc 64-bit tùy OS</span>
+<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="nx">Pi</span><span class="w"> </span><span class="kt">float64</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mf">3.1415</span><span class="w">     </span><span class="c1">// hằng số kiểu số thực (float64)</span>
+<span class="w">    </span><span class="nx">isAdmin</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="kc">true</span><span class="w">               </span><span class="c1">// boolean với short declaration :=</span>
+
+<span class="w">    </span><span class="kd">var</span><span class="w"> </span><span class="nx">letter</span><span class="w"> </span><span class="kt">rune</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="sc">&#39;𝔊&#39;</span><span class="w">         </span><span class="c1">// ký tự Unicode (rune = int32)</span>
+<span class="w">    </span><span class="kd">var</span><span class="w"> </span><span class="nx">data</span><span class="w"> </span><span class="kt">byte</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="sc">&#39;A&#39;</span><span class="w">           </span><span class="c1">// byte là alias của uint8</span>
+
+<span class="w">    </span><span class="kd">var</span><span class="w"> </span><span class="nx">name</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">&quot;Gopher&quot;</span><span class="w">    </span><span class="c1">// chuỗi UTF-8, immutable</span>
+
+<span class="w">    </span><span class="nx">nums</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="p">[]</span><span class="kt">int</span><span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">}</span><span class="w">        </span><span class="c1">// slice động chứa int</span>
+<span class="w">    </span><span class="nx">arr</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="kt">int</span><span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">}</span><span class="w">        </span><span class="c1">// array tĩnh với độ dài cố định</span>
+
+<span class="w">    </span><span class="nx">fmt</span><span class="p">.</span><span class="nx">Println</span><span class="p">(</span><span class="s">&quot;Age:&quot;</span><span class="p">,</span><span class="w"> </span><span class="nx">age</span><span class="p">)</span>
+<span class="w">    </span><span class="nx">fmt</span><span class="p">.</span><span class="nx">Println</span><span class="p">(</span><span class="s">&quot;Pi:&quot;</span><span class="p">,</span><span class="w"> </span><span class="nx">Pi</span><span class="p">)</span>
+<span class="w">    </span><span class="nx">fmt</span><span class="p">.</span><span class="nx">Println</span><span class="p">(</span><span class="s">&quot;Admin:&quot;</span><span class="p">,</span><span class="w"> </span><span class="nx">isAdmin</span><span class="p">)</span>
+<span class="w">    </span><span class="nx">fmt</span><span class="p">.</span><span class="nx">Println</span><span class="p">(</span><span class="s">&quot;Letter:&quot;</span><span class="p">,</span><span class="w"> </span><span class="nb">string</span><span class="p">(</span><span class="nx">letter</span><span class="p">))</span><span class="w"> </span><span class="c1">// chuyển rune thành chuỗi</span>
+<span class="w">    </span><span class="nx">fmt</span><span class="p">.</span><span class="nx">Println</span><span class="p">(</span><span class="s">&quot;Byte:&quot;</span><span class="p">,</span><span class="w"> </span><span class="nx">data</span><span class="p">)</span>
+<span class="w">    </span><span class="nx">fmt</span><span class="p">.</span><span class="nx">Println</span><span class="p">(</span><span class="s">&quot;Name:&quot;</span><span class="p">,</span><span class="w"> </span><span class="nx">name</span><span class="p">)</span>
+<span class="w">    </span><span class="nx">fmt</span><span class="p">.</span><span class="nx">Println</span><span class="p">(</span><span class="s">&quot;Slice:&quot;</span><span class="p">,</span><span class="w"> </span><span class="nx">nums</span><span class="p">)</span>
+<span class="w">    </span><span class="nx">fmt</span><span class="p">.</span><span class="nx">Println</span><span class="p">(</span><span class="s">&quot;Array:&quot;</span><span class="p">,</span><span class="w"> </span><span class="nx">arr</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre>
+</div>
+
+<hr />
+
+
+<h2>📊 Bảng giá trị (Range) các kiểu dữ liệu phổ biến</h2>
+
+<table>
+<thead>
+<tr>
+  <th>Kiểu dữ liệu</th>
+  <th>Bit</th>
+  <th>Min Giá trị</th>
+  <th>Max Giá trị</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>int8</td>
+  <td>8</td>
+  <td>-128</td>
+  <td>127</td>
+</tr>
+<tr>
+  <td>uint8 (byte)</td>
+  <td>8</td>
+  <td>0</td>
+  <td>255</td>
+</tr>
+<tr>
+  <td>int16</td>
+  <td>16</td>
+  <td>-32,768</td>
+  <td>32,767</td>
+</tr>
+<tr>
+  <td>uint16</td>
+  <td>16</td>
+  <td>0</td>
+  <td>65,535</td>
+</tr>
+<tr>
+  <td>int32 (rune)</td>
+  <td>32</td>
+  <td>-2,147,483,648</td>
+  <td>2,147,483,647</td>
+</tr>
+<tr>
+  <td>uint32</td>
+  <td>32</td>
+  <td>0</td>
+  <td>4,294,967,295</td>
+</tr>
+<tr>
+  <td>int64</td>
+  <td>64</td>
+  <td>-9,223,372,036,854,775,808</td>
+  <td>9,223,372,036,854,775,807</td>
+</tr>
+<tr>
+  <td>uint64</td>
+  <td>64</td>
+  <td>0</td>
+  <td>18,446,744,073,709,551,615</td>
+</tr>
+<tr>
+  <td>float32</td>
+  <td>32</td>
+  <td>≈ -3.4e38</td>
+  <td>≈ +3.4e38</td>
+</tr>
+<tr>
+  <td>float64</td>
+  <td>64</td>
+  <td>≈ -1.8e308</td>
+  <td>≈ +1.8e308</td>
+</tr>
+<tr>
+  <td>bool</td>
+  <td>1</td>
+  <td>false</td>
+  <td>true</td>
+</tr>
+</tbody>
+</table>
+
+
+<h2>📌 Ý nghĩa hệ thống</h2>
+
+<p>Việc nắm rõ các kiểu dữ liệu không chỉ giúp bạn tránh lỗi type mismatch, mà còn:
+- Tối ưu hiệu suất xử lý và quản lý bộ nhớ
+- Tránh bug liên quan đến Unicode/string slicing
+- Viết API rõ ràng, không ambiguous với kiểu dữ liệu cụ thể (<code>[]byte</code>, <code>string</code>, <code>rune</code>)
+- Phân biệt khi truyền dữ liệu qua hàm: array (copy toàn bộ) vs slice (chia sẻ vùng nhớ)</p>
+
+
+  
+<hr />
+<h1 id="2-cấu-trúc-điều-kiện-và-vòng-lặp">2. Cấu trúc điều kiện và vòng lặp</h1>
+
+<h2>🧠 Khái niệm tổng quát</h2>
+<p>Golang cung cấp ba cấu trúc điều khiển cơ bản:</p>
+<ul>
+  <li><strong>if / else if / else</strong>: kiểm tra điều kiện logic</li>
+  <li><strong>switch</strong>: thay thế cho nhiều if lồng nhau, hỗ trợ fallthrough</li>
+  <li><strong>for</strong>: vòng lặp duy nhất trong Go, dùng được cho loop, while, foreach</li>
+</ul>
+
+<h2>🔍 Phân tích chuyên sâu</h2>
+<ul>
+  <li><code>if</code> trong Go không cần dấu ngoặc tròn quanh điều kiện (như trong C).</li>
+  <li><code>switch</code> trong Go không cần <code>break</code>; nó tự động không fallthrough, trừ khi được khai báo rõ ràng.</li>
+  <li><code>for</code> có thể hoạt động như:
+    <ul>
+      <li>vòng lặp chuẩn: <code>for i := 0; i &lt; n; i++</code></li>
+      <li>vòng lặp while: <code>for cond</code></li>
+      <li>vòng lặp vô hạn: <code>for &#123;&#125;</code></li>
+      <li>range loop: <code>for i, v := range collection</code></li>
+    </ul>
+  </li>
+</ul>
+
+<h2>💡 Ví dụ code: if, switch, for</h2>
+
+<pre><code class="go">// Cấu trúc điều kiện với if/else
+x := 5
+if x > 10 {
+    fmt.Println("Lớn hơn 10")
+} else if x == 5 {
+    fmt.Println("Bằng 5")
+} else {
+    fmt.Println("Khác")
+}
+
+// switch cơ bản không cần break
+switch x {
+case 1:
+    fmt.Println("One")
+case 5:
+    fmt.Println("Five") // đúng
+default:
+    fmt.Println("Other")
+}
+
+// for chuẩn
+for i := 0; i < 3; i++ {
+    fmt.Println(i)
+}
+
+// for như while
+i := 0
+for i < 3 {
+    fmt.Println(i)
+    i++
+}
+
+// for vô hạn
+// for {
+//     fmt.Println("Chạy mãi mãi")
+// }
+
+// range trên slice
+nums := []int{1, 2, 3}
+for idx, val := range nums {
+    fmt.Println("index:", idx, "value:", val)
+}
+</code></pre>
+
+<h2>📌 Ý nghĩa hệ thống</h2>
+<ul>
+  <li>Việc sử dụng đúng cấu trúc điều khiển giúp mã rõ ràng, dễ đọc.</li>
+  <li>Go khuyến khích viết code đơn giản: <code>switch</code> thay vì nhiều <code>if</code> lồng nhau.</li>
+  <li><code>range</code> rất mạnh với slice, map, channel — hỗ trợ clean code khi lặp.</li>
+</ul>
+
+
+<hr />
+<h1 id="3-hàm-closure-và-hàm-variadic">3. Hàm, Closure, và Hàm Variadic</h1>
+
+<h2>🧠 Khái niệm tổng quát</h2>
+<ul>
+  <li><strong>Hàm (function)</strong> trong Go là thực thể first-class: có thể gán vào biến, truyền như tham số.</li>
+  <li><strong>Closure</strong>: là hàm nội tại (inner function) có thể truy cập biến bên ngoài phạm vi khai báo.</li>
+  <li><strong>Variadic function</strong>: hàm nhận số lượng đối số không xác định (dùng dấu <code>...</code>).</li>
+</ul>
+
+<h2>🔍 Phân tích chuyên sâu</h2>
+<ul>
+  <li>Hàm có thể trả nhiều giá trị.</li>
+  <li>Tên tham số có thể được đặt hoặc để trống. Có thể dùng kiểu trả về có tên.</li>
+  <li>Closure có thể giữ trạng thái bên trong → dùng như biến private.</li>
+  <li>Variadic thực chất là <code>...T</code> → slice trong runtime.</li>
+</ul>
+
+<h2>💡 Ví dụ code</h2>
+<pre><code class="go">// Hàm trả về 2 giá trị
+func divide(a, b int) (int, error) {
+    if b == 0 {
+        return 0, fmt.Errorf("chia cho 0")
+    }
+    return a / b, nil
+}
+
+// Closure giữ trạng thái
+func counter() func() int {
+    x := 0
+    return func() int {
+        x++
+        return x
+    }
+}
+
+count := counter()
+fmt.Println(count()) // 1
+fmt.Println(count()) // 2
+
+// Hàm variadic: tổng nhiều số
+func sum(nums ...int) int {
+    total := 0
+    for _, n := range nums {
+        total += n
+    }
+    return total
+}
+
+fmt.Println(sum(1, 2, 3)) // 6
+</code></pre>
+
+<h2>📌 Ý nghĩa hệ thống</h2>
+<ul>
+  <li>Closure giúp viết logic dạng module hóa, giữ được trạng thái riêng tư.</li>
+  <li>Variadic dùng nhiều cho logging, xử lý list tham số không cố định.</li>
+  <li>Go không có default parameter → nên kết hợp closure hoặc biến option.</li>
+</ul>
+
+
+<hr />
+<h1 id="4-slice-map-array-và-type-casting">4. Slice, Map, Array và Type Casting</h1>
+
+<h2>🧠 Khái niệm tổng quát</h2>
+<ul>
+  <li><strong>Array</strong>: mảng có kích thước cố định, thuộc về kiểu.</li>
+  <li><strong>Slice</strong>: view linh hoạt, bao gồm pointer, length và capacity.</li>
+  <li><strong>Map</strong>: bảng ánh xạ key-value.</li>
+  <li><strong>Type casting</strong>: chuyển kiểu tường minh, không có ép kiểu ngầm.</li>
+</ul>
+
+<h2>💡 Ví dụ</h2>
+<pre><code class="go">arr := [3]int{1, 2, 3}
+slice := arr[0:2]
+slice = append(slice, 4)
+
+m := map[string]int{"a": 1, "b": 2}
+m["c"] = 3
+
+var x float64 = 3.14
+var y int = int(x)
+</code></pre>
+
+<hr />
+<h1 id="5-struct-method-và-embedded-struct">5. Struct, Method, và Embedded Struct</h1>
+
+<h2>🧠 Khái niệm tổng quát</h2>
+<ul>
+  <li><strong>Struct</strong>: nhóm các field thành đối tượng.</li>
+  <li><strong>Method</strong>: hàm gắn với kiểu (thường là struct).</li>
+  <li><strong>Embedded struct</strong>: kế thừa hành vi tương tự inheritance nông.</li>
+</ul>
+
+<h2>💡 Ví dụ</h2>
+<pre><code class="go">type User struct {
+    Name string
+    Age  int
+}
+
+func (u User) Greet() string {
+    return "Hello " + u.Name
+}
+
+type Admin struct {
+    User
+    Role string
+}
+</code></pre>
+
+<hr />
+<h1 id="6-interface-và-type-assertion">6. Interface và Type Assertion</h1>
+
+<h2>🧠 Khái niệm tổng quát</h2>
+<ul>
+  <li><strong>Interface</strong>: tập hợp hành vi (method set).</li>
+  <li>Go dùng interface để đa hình (polymorphism).</li>
+  <li><strong>Type assertion</strong>: ép kiểu từ interface sang kiểu cụ thể.</li>
+</ul>
+
+<h2>💡 Ví dụ</h2>
+<pre><code class="go">type Speaker interface {
+    Speak() string
+}
+
+type Person struct {
+    Name string
+}
+
+func (p Person) Speak() string {
+    return "Hi, I'm " + p.Name
+}
+
+func test(i interface{}) {
+    if v, ok := i.(string); ok {
+        fmt.Println("String:", v)
+    }
+}
+</code></pre>
+
+<hr />
+<h1 id="7-module-package-và-go-mod">7. Module, Package và go mod</h1>
+
+<h2>🧠 Khái niệm tổng quát</h2>
+<ul>
+  <li><strong>Package</strong>: đơn vị tổ chức mã nguồn.</li>
+  <li><strong>Module</strong>: tập hợp package quản lý bằng go.mod.</li>
+  <li><strong>go.mod</strong>: file khai báo tên module, version dependency.</li>
+</ul>
+
+<h2>💡 Ví dụ</h2>
+<pre><code class="go">// go.mod
+module github.com/example/project
+
+require (
+    github.com/sirupsen/logrus v1.9.0
+)
+</code></pre>
+
+</main>
+  <script src="main.js"></script>
+</body>
+</html>
