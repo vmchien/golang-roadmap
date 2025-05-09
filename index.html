@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Roadmap Golang - Mục 1</title>
+  <title>Roadmap Golang</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -44,8 +44,8 @@
       <li><a href="#20-error-wrapping-stacktrace-và-structured-logging">20. Error Wrapping, Stacktrace, và Structured Logging</a></li>
       <li><a href="#21-staticcheck-golangci-lint-go-vet-go-fmt">21. Staticcheck, GolangCI-Lint, go vet, go fmt</a></li>
       <li><a href="#22-design-patterns-trong-go">22. Design Patterns trong Go</a></li>
-      <li><a href="#23-secure-coding-và-cicd-workflow">23. Secure Coding và CI/CD Workflow</a></li>
-      <li><a href="#24-system-design-worker-pool-fan-inout-pipeline">24. System Design: Worker Pool, Fan-in/out, Pipeline</a></li>
+      <li><a href="#23-system-design-worker-pool-fan-inout-pipeline">23. System Design: Worker Pool, Fan-in/out, Pipeline</a></li>
+      <li><a href="#24-secure-coding-và-cicd-workflow">24. Secure Coding và CI/CD Workflow</a></li>
       <li><a href="#25-distributed-systems-redis-kafka-envoyproxy">25. Distributed Systems: Redis, Kafka, EnvoyProxy</a></li>
     </ul>
   </li>
@@ -54,18 +54,6 @@
   </nav>
   <main>
     <h1 id="1-kiểu-dữ-liệu-cơ-bản-và-khai-báo-biến">✅ 1. Kiểu dữ liệu cơ bản và khai báo biến</h1>
-
-<hr />
-
-<p>Trong Golang, việc hiểu rõ <strong>kiểu dữ liệu</strong> và <strong>cách khai báo biến</strong> là bước nền tảng không thể thiếu. Từ việc xác định giá trị cụ thể được lưu trữ ở đâu trong bộ nhớ (stack vs heap), đến cách Go runtime tối ưu hóa truy cập, mọi thứ đều bắt đầu từ đây.</p>
-
-<p>Ngôn ngữ Go có các nhóm dữ liệu chính:
-- <strong>Số nguyên (Integer)</strong>: <code>int</code>, <code>int8</code>, <code>int16</code>, <code>int32</code>, <code>int64</code>, và các biến thể không dấu <code>uint*</code>
-- <strong>Số thực (Floating Point)</strong>: <code>float32</code>, <code>float64</code>
-- <strong>Boolean</strong>: <code>true</code>, <code>false</code>
-- <strong>Chuỗi (String)</strong>: kiểu dữ liệu UTF-8 bất biến
-- <strong>Ký tự đặc biệt</strong>: <code>byte</code> (alias của <code>uint8</code>), <code>rune</code> (alias của <code>int32</code>, đại diện cho Unicode code point)
-- <strong>Cấu trúc dữ liệu tĩnh/động</strong>: <code>array</code>, <code>slice</code></p>
 
 <hr />
 
@@ -311,33 +299,36 @@ for idx, val := range nums {
 
 
 <hr />
-<h1 id="3-hàm-closure-và-hàm-variadic">3. Hàm, Closure, và Hàm Variadic</h1>
+<h1 id="3-hàm-closure-và-hàm-variadic">3. Hàm, Closure và Hàm Variadic</h1>
 
 <h2>🧠 Khái niệm tổng quát</h2>
 <ul>
-  <li><strong>Hàm (function)</strong> trong Go là thực thể first-class: có thể gán vào biến, truyền như tham số.</li>
-  <li><strong>Closure</strong>: là hàm nội tại (inner function) có thể truy cập biến bên ngoài phạm vi khai báo.</li>
-  <li><strong>Variadic function</strong>: hàm nhận số lượng đối số không xác định (dùng dấu <code>...</code>).</li>
+  <li><strong>Hàm (function)</strong> trong Go là <em>first-class citizen</em>: có thể gán vào biến, truyền làm tham số, hoặc trả về từ hàm.</li>
+  <li><strong>Closure</strong>: hàm bên trong có thể "bắt" và ghi nhớ giá trị từ scope bên ngoài.</li>
+  <li><strong>Variadic function</strong>: hàm nhận số lượng đối số động, biểu diễn bằng <code>...</code> và hoạt động như slice trong runtime.</li>
 </ul>
 
 <h2>🔍 Phân tích chuyên sâu</h2>
 <ul>
-  <li>Hàm có thể trả nhiều giá trị.</li>
-  <li>Tên tham số có thể được đặt hoặc để trống. Có thể dùng kiểu trả về có tên.</li>
-  <li>Closure có thể giữ trạng thái bên trong → dùng như biến private.</li>
-  <li>Variadic thực chất là <code>...T</code> → slice trong runtime.</li>
+  <li>Closure có thể làm biến escape sang heap nếu giữ tham chiếu ra ngoài vòng đời ban đầu.</li>
+  <li>Truyền hàm như parameter cho phép tách biệt logic và tuân thủ nguyên tắc SOLID.</li>
+  <li>Variadic function bản chất là nhận một slice — rất phổ biến trong logging, middleware, builder pattern.</li>
 </ul>
 
-<h2>💡 Ví dụ code</h2>
-<pre><code class="go">// Hàm trả về 2 giá trị
-func divide(a, b int) (int, error) {
-    if b == 0 {
-        return 0, fmt.Errorf("chia cho 0")
-    }
-    return a / b, nil
+<h2>💡 Ví dụ code nâng cao</h2>
+<pre><code class="go">// Hàm như biến
+hello := func(name string) string {
+    return "Hello " + name
 }
+fmt.Println(hello("Gopher"))
 
-// Closure giữ trạng thái
+// Hàm nhận hàm khác làm tham số
+func execute(fn func(string) string) {
+    fmt.Println(fn("Golang"))
+}
+execute(hello) // truyền hàm
+
+// Closure ghi nhớ giá trị bên ngoài
 func counter() func() int {
     x := 0
     return func() int {
@@ -345,12 +336,20 @@ func counter() func() int {
         return x
     }
 }
+c := counter()
+fmt.Println(c()) // 1
+fmt.Println(c()) // 2
 
-count := counter()
-fmt.Println(count()) // 1
-fmt.Println(count()) // 2
+// Hàm trả về hàm: factory pattern
+func prefixer(prefix string) func(string) string {
+    return func(s string) string {
+        return prefix + s
+    }
+}
+addGo := prefixer("Go-")
+fmt.Println(addGo("Lang")) // Go-Lang
 
-// Hàm variadic: tổng nhiều số
+// Variadic function
 func sum(nums ...int) int {
     total := 0
     for _, n := range nums {
@@ -358,59 +357,89 @@ func sum(nums ...int) int {
     }
     return total
 }
-
 fmt.Println(sum(1, 2, 3)) // 6
+
+// Truyền slice vào hàm variadic
+nums := []int{10, 20, 30}
+fmt.Println(sum(nums...)) // cần dấu ...
 </code></pre>
 
-<h2>📌 Ý nghĩa hệ thống</h2>
+<h2>📌 Góc nhìn hệ thống & tối ưu</h2>
 <ul>
-  <li>Closure giúp viết logic dạng module hóa, giữ được trạng thái riêng tư.</li>
-  <li>Variadic dùng nhiều cho logging, xử lý list tham số không cố định.</li>
-  <li>Go không có default parameter → nên kết hợp closure hoặc biến option.</li>
+  <li>Hàm như tham số là nền tảng của pattern functional (e.g., handler chain, config builder).</li>
+  <li>Closure có thể giúp "đóng gói logic + trạng thái" giống object — nhưng cần quản lý heap allocation.</li>
+  <li>Go không hỗ trợ default parameter — variadic function kết hợp với pattern giúp lấp chỗ trống này.</li>
 </ul>
-
 
 <hr />
 <h1 id="4-slice-map-array-và-type-casting">4. Slice, Map, Array và Type Casting</h1>
 
-<h2>🧠 Khái niệm tổng quát</h2>
+<h2>🧠 Khái niệm và khác biệt</h2>
 <ul>
-  <li><strong>Array</strong>: mảng có kích thước cố định, thuộc về kiểu.</li>
-  <li><strong>Slice</strong>: view linh hoạt, bao gồm pointer, length và capacity.</li>
-  <li><strong>Map</strong>: bảng ánh xạ key-value.</li>
-  <li><strong>Type casting</strong>: chuyển kiểu tường minh, không có ép kiểu ngầm.</li>
+  <li><strong>Array</strong>: Kích thước cố định, là giá trị, khi gán là <code>copy</code>.</li>
+  <li><strong>Slice</strong>: Trỏ vào underlying array, có <code>pointer + len + cap</code>, khi gán là <code>reference</code>.</li>
+  <li><strong>Map</strong>: Reference type, ánh xạ key-value.</li>
+  <li><strong>Type Casting</strong>: Ép kiểu tường minh, không có implicit conversion như C/C++.</li>
+</ul>
+
+<h2>🔍 Phân tích nâng cao</h2>
+<ul>
+  <li><code>slice1 := slice2</code> → cả 2 cùng trỏ 1 underlying array.</li>
+  <li><code>copy(slice2, slice1)</code> để clone slice.</li>
+  <li><code>map</code> không cần init với <code>make</code> sẽ panic khi gán.</li>
+  <li>Không thể ép kiểu <code>float64 → int</code> ngầm — cần <code>int(f)</code>.</li>
 </ul>
 
 <h2>💡 Ví dụ</h2>
 <pre><code class="go">arr := [3]int{1, 2, 3}
-slice := arr[0:2]
-slice = append(slice, 4)
+arr2 := arr
+arr2[0] = 99 // arr[0] không đổi
 
-m := map[string]int{"a": 1, "b": 2}
-m["c"] = 3
+slice := []int{1, 2, 3}
+s2 := slice
+s2[0] = 88 // ảnh hưởng slice gốc
 
-var x float64 = 3.14
-var y int = int(x)
+clone := make([]int, len(slice))
+copy(clone, slice) // đúng cách clone slice
+
+m := make(map[string]int)
+m["x"] = 100
+
+var f float64 = 3.99
+i := int(f) // ép kiểu rõ ràng
 </code></pre>
 
 <hr />
-<h1 id="5-struct-method-và-embedded-struct">5. Struct, Method, và Embedded Struct</h1>
+<h1 id="5-struct-method-và-embedded-struct">5. Struct, Method và Embedded Struct</h1>
 
 <h2>🧠 Khái niệm tổng quát</h2>
 <ul>
-  <li><strong>Struct</strong>: nhóm các field thành đối tượng.</li>
-  <li><strong>Method</strong>: hàm gắn với kiểu (thường là struct).</li>
-  <li><strong>Embedded struct</strong>: kế thừa hành vi tương tự inheritance nông.</li>
+  <li><strong>Struct</strong>: gom các field thành cấu trúc dữ liệu.</li>
+  <li><strong>Method</strong>: hàm gắn với kiểu (có thể là pointer hoặc value).</li>
+  <li><strong>Embedded Struct</strong>: cho phép kế thừa hành vi.</li>
 </ul>
 
-<h2>💡 Ví dụ</h2>
+<h2>🔍 Phân tích chuyên sâu</h2>
+<ul>
+  <li><code>Value receiver</code>: dùng khi không cần thay đổi data, copy.</li>
+  <li><code>Pointer receiver</code>: dùng để thay đổi trực tiếp hoặc tiết kiệm copy.</li>
+  <li>Sắp xếp field ảnh hưởng padding/memory layout.</li>
+</ul>
+
 <pre><code class="go">type User struct {
+    ID   int64
     Name string
-    Age  int
+    Age  int8
+    Flag bool
 }
 
+// memory align tốt hơn nếu sắp: int64, string, bool, int8
+
 func (u User) Greet() string {
-    return "Hello " + u.Name
+    return "Hi " + u.Name
+}
+func (u *User) SetAge(age int8) {
+    u.Age = age
 }
 
 type Admin struct {
@@ -422,29 +451,37 @@ type Admin struct {
 <hr />
 <h1 id="6-interface-và-type-assertion">6. Interface và Type Assertion</h1>
 
-<h2>🧠 Khái niệm tổng quát</h2>
+<h2>🧠 Khái niệm chuyên sâu</h2>
 <ul>
-  <li><strong>Interface</strong>: tập hợp hành vi (method set).</li>
-  <li>Go dùng interface để đa hình (polymorphism).</li>
-  <li><strong>Type assertion</strong>: ép kiểu từ interface sang kiểu cụ thể.</li>
+  <li>Interface gồm 2 phần: <code>type</code> + <code>value</code>.</li>
+  <li>Empty interface <code>interface{{}}</code>: chấp nhận mọi kiểu, dùng trong JSON, log...</li>
+  <li>Interface lưu <strong>bản sao</strong> giá trị (không trỏ trực tiếp unless pointer).</li>
 </ul>
 
-<h2>💡 Ví dụ</h2>
-<pre><code class="go">type Speaker interface {
-    Speak() string
+<h2>💡 Phân tích</h2>
+<ul>
+  <li><code>type assertion</code> ép về kiểu cụ thể <code>val.(string)</code>.</li>
+  <li><code>type switch</code> dùng để xử lý đa kiểu khi biết là interface.</li>
+</ul>
+
+<pre><code class="go">type Printer interface {
+    Print()
 }
 
-type Person struct {
-    Name string
+type File struct{ Path string }
+
+func (f File) Print() {
+    fmt.Println("File:", f.Path)
 }
 
-func (p Person) Speak() string {
-    return "Hi, I'm " + p.Name
-}
-
-func test(i interface{}) {
-    if v, ok := i.(string); ok {
-        fmt.Println("String:", v)
+func inspect(i interface{}) {
+    switch v := i.(type) {
+    case string:
+        fmt.Println("string:", v)
+    case int:
+        fmt.Println("int:", v)
+    default:
+        fmt.Println("unknown")
     }
 }
 </code></pre>
@@ -452,23 +489,1573 @@ func test(i interface{}) {
 <hr />
 <h1 id="7-module-package-và-go-mod">7. Module, Package và go mod</h1>
 
-<h2>🧠 Khái niệm tổng quát</h2>
+<h2>🧠 Khái niệm</h2>
 <ul>
-  <li><strong>Package</strong>: đơn vị tổ chức mã nguồn.</li>
-  <li><strong>Module</strong>: tập hợp package quản lý bằng go.mod.</li>
-  <li><strong>go.mod</strong>: file khai báo tên module, version dependency.</li>
+  <li><strong>Package</strong>: nhóm logic nhỏ, mỗi thư mục có file <code>package x</code>.</li>
+  <li><strong>Module</strong>: tập hợp package, bắt đầu từ thư mục có file <code>go.mod</code>.</li>
+</ul>
+
+<h2>📌 Các lệnh quan trọng</h2>
+<ul>
+  <li><code>go mod init module_name</code>: khởi tạo module</li>
+  <li><code>go mod tidy</code>: dọn dependency, xóa unused</li>
+  <li><code>go get</code>: thêm thư viện</li>
+  <li><code>go mod edit</code>: sửa go.mod thủ công</li>
 </ul>
 
 <h2>💡 Ví dụ</h2>
-<pre><code class="go">// go.mod
-module github.com/example/project
+<pre><code>// go.mod
+module github.com/example/myapp
+
+go 1.21
 
 require (
     github.com/sirupsen/logrus v1.9.0
 )
+
+// thư mục project
+myapp/
+├── go.mod
+├── main.go
+├── util/
+│   └── math.go  (package util)
 </code></pre>
 
+
+<hr />
+<h1 id="8-goroutine-và-channel">8. Goroutine và Channel</h1>
+
+<h2>🧠 Khái niệm tổng quát</h2>
+<ul>
+  <li><strong>Goroutine</strong> là đơn vị thực thi nhẹ của Go, hoạt động song song (concurrent) dựa trên cơ chế <code>M:N scheduling</code>.</li>
+  <li><strong>Channel</strong> là cấu trúc truyền thông đồng bộ giữa các goroutine, giúp trao đổi dữ liệu an toàn.</li>
+</ul>
+
+<h2>🔍 Phân tích chuyên sâu</h2>
+<ul>
+  <li>Goroutine rất nhẹ (~2KB stack), được Go runtime quản lý, có thể scale hàng nghìn.</li>
+  <li>Go sử dụng M:N scheduler: nhiều goroutine chạy trên nhiều OS thread thông qua logical processor (GOMAXPROCS).</li>
+  <li><code>channel</code> có 2 loại: buffered và unbuffered — ảnh hưởng trực tiếp đến hành vi block.</li>
+  <li><strong>select</strong> cho phép chờ nhiều channel cùng lúc.</li>
+  <li><code>close(chan)</code> báo hiệu channel đã đóng, không gửi thêm được.</li>
+</ul>
+
+<h2>💡 Ví dụ thực tế</h2>
+<pre><code class="go">func worker(id int, jobs <-chan int, results chan<- int) {
+    for j := range jobs {
+        fmt.Printf("worker %d processing job %d\n", id, j)
+        time.Sleep(time.Second)
+        results <- j * 2
+    }
+}
+
+func main() {
+    jobs := make(chan int, 5)
+    results := make(chan int, 5)
+
+    for w := 1; w <= 3; w++ {
+        go worker(w, jobs, results)
+    }
+
+    for j := 1; j <= 5; j++ {
+        jobs <- j
+    }
+    close(jobs)
+
+    for r := 1; r <= 5; r++ {
+        fmt.Println("result:", <-results)
+    }
+}
+</code></pre>
+
+<h2>📌 Tư duy hệ thống</h2>
+<ul>
+  <li><strong>Fan-out:</strong> nhiều goroutine cùng xử lý chung 1 channel đầu vào (như worker pool).</li>
+  <li><strong>Fan-in:</strong> nhiều nguồn channel gộp lại về một channel đầu ra.</li>
+  <li>Tránh deadlock bằng việc luôn <strong>đóng channel</strong> nếu không dùng nữa, và kiểm soát kỹ unbuffered channel.</li>
+  <li>Dùng <code>select {}</code> kết hợp với <code>context</code> để xử lý timeout, cancel.</li>
+</ul>
+
+<h2>💡 Ví dụ thực tế</h2>
+<pre><code class="go">// Goroutine đơn giản
+go func() {
+    fmt.Println("Chạy song song")
+}()
+
+// Channel đồng bộ (unbuffered)
+ch := make(chan int)
+go func() {
+    ch <- 10 // gửi dữ liệu
+}()
+val := <-ch // nhận dữ liệu
+fmt.Println("Nhận được:", val)
+
+// Buffered channel
+cb := make(chan string, 2)
+cb <- "hello"
+cb <- "world"
+fmt.Println(<-cb)
+fmt.Println(<-cb)
+
+// Select trên nhiều channel
+c1 := make(chan string)
+c2 := make(chan string)
+
+go func() { c1 <- "one" }()
+go func() { c2 <- "two" }()
+
+select {
+case msg1 := <-c1:
+    fmt.Println("từ c1:", msg1)
+case msg2 := <-c2:
+    fmt.Println("từ c2:", msg2)
+}
+
+// Channel đóng
+done := make(chan struct{})
+close(done)
+_, ok := <-done
+fmt.Println("Channel đã đóng:", !ok)
+</code></pre>
+
+<h2>📌 Ứng dụng hệ thống</h2>
+<ul>
+  <li>Sử dụng goroutine để xây dựng mô hình <strong>worker pool</strong>, <strong>fan-out</strong>, <strong>pipeline processing</strong>.</li>
+  <li>Channel giúp loại bỏ lock trong nhiều tình huống, nhưng cũng dễ gây deadlock nếu không hiểu rõ blocking behavior.</li>
+  <li>Không bao giờ được <code>close()</code> channel ở phía nhận.</li>
+  <li>Nil channel sẽ block vĩnh viễn – cần tránh trong production logic.</li>
+</ul>
+
+<h2>🧠 Nâng cao: main cũng là một Goroutine</h2>
+<ul>
+  <li>Hàm <code>main()</code> trong Go thực chất chạy trong một goroutine đầu tiên được tạo bởi runtime.</li>
+  <li>Khi <code>main()</code> kết thúc, toàn bộ chương trình sẽ <strong>exit ngay lập tức</strong>, kể cả các goroutine khác chưa hoàn tất.</li>
+  <li>Vì vậy: nếu bạn khởi tạo goroutine trong <code>main()</code> mà không dùng <code>WaitGroup</code>, <code>channel</code>, hoặc <code>sleep</code>, chương trình có thể kết thúc khi goroutine chưa chạy xong.</li>
+</ul>
+
+<h2>🧠 Khởi tạo và thứ tự thực thi: func init, import</h2>
+<ul>
+  <li>Go tự động chạy tất cả <code>func init()</code> của từng file trước khi <code>main()</code> chạy.</li>
+  <li>Trong mỗi package:
+    <ul>
+      <li>Biến toàn cục được khởi tạo trước</li>
+      <li>Sau đó chạy <code>init()</code> theo thứ tự khai báo</li>
+    </ul>
+  </li>
+  <li>Thứ tự import và khởi tạo package là <strong>đệ quy theo dependency</strong>: Go đảm bảo các package phụ thuộc được init trước khi package cha chạy init.</li>
+</ul>
+
+<pre><code class="go">package main
+
+import "fmt"
+
+var G = initVar()
+
+func initVar() int {
+    fmt.Println("initVar gọi trước main")
+    return 100
+}
+
+func init() {
+    fmt.Println("init chạy trước main")
+}
+
+func main() {
+    fmt.Println("main bắt đầu")
+}
+</code></pre>
+
+
+<hr />
+<h1 id="9-đồng-bộ-hoá-với-mutex-rwmutex-waitgroup">9. Đồng bộ hoá với Mutex, RWMutex, WaitGroup</h1>
+
+<h2>🧠 Khái niệm tổng quát</h2>
+<ul>
+  <li><strong>Mutex (Mutual Exclusion)</strong>: dùng để bảo vệ vùng tài nguyên chỉ cho phép 1 goroutine truy cập tại 1 thời điểm.</li>
+  <li><strong>RWMutex</strong>: cho phép nhiều goroutine đọc đồng thời (Read Lock), nhưng chỉ 1 ghi (Write Lock).</li>
+  <li><strong>WaitGroup</strong>: dùng để chờ tất cả goroutine hoàn tất công việc trước khi tiếp tục.</li>
+</ul>
+
+<h2>🔍 Phân tích chuyên sâu</h2>
+<ul>
+  <li>Mutex hoạt động giống như critical section – không dùng đúng có thể gây <strong>deadlock</strong>.</li>
+  <li>RWMutex dùng tốt khi tỉ lệ đọc cao hơn ghi, giúp tăng concurrency.</li>
+  <li>WaitGroup giúp bạn tránh gọi <code>time.Sleep</code> trong các tác vụ song song.</li>
+  <li><strong>Luôn</strong> unlock sau lock – dùng <code>defer</code> để an toàn.</li>
+</ul>
+
+<h2>💡 Ví dụ thực tế</h2>
+<pre><code class="go">import (
+    "fmt"
+    "sync"
+)
+
+var mu sync.Mutex
+var count int
+
+func increment() {
+    mu.Lock()
+    defer mu.Unlock()
+    count++
+}
+
+// RWMutex cho đọc nhiều - ghi 1
+var rw sync.RWMutex
+var data = make(map[string]string)
+
+func readData(key string) string {
+    rw.RLock()
+    defer rw.RUnlock()
+    return data[key]
+}
+
+func writeData(key, val string) {
+    rw.Lock()
+    defer rw.Unlock()
+    data[key] = val
+}
+
+// WaitGroup ví dụ
+var wg sync.WaitGroup
+
+func worker(id int) {
+    defer wg.Done()
+    fmt.Printf("Worker %d xong việc\n", id)
+}
+
+func main() {
+    for i := 1; i <= 3; i++ {
+        wg.Add(1)
+        go worker(i)
+    }
+    wg.Wait() // chờ tất cả worker kết thúc
+    fmt.Println("Tất cả goroutine đã hoàn tất")
+}
+</code></pre>
+
+<h2>📌 Ứng dụng hệ thống</h2>
+<ul>
+  <li><strong>Mutex</strong>: dùng để đồng bộ hóa các biến toàn cục khi nhiều goroutine đọc/ghi cùng lúc.</li>
+  <li><strong>RWMutex</strong>: tối ưu hoá hiệu suất khi số lượng đọc nhiều gấp nhiều lần ghi.</li>
+  <li><strong>WaitGroup</strong>: thay thế cho sleep/wait thủ công, cực kỳ hiệu quả trong batch job, worker pool, async task.</li>
+  <li><strong>Tips:</strong> Luôn unlock bằng <code>defer</code>, tránh quên và gây block toàn chương trình.</li>
+</ul>
+
+
+
+<hr />
+<h1 id="10-context-và-lifecycle-control">10. Context và Lifecycle Control</h1>
+
+<h2>🧠 Khái niệm tổng quát</h2>
+<ul>
+  <li><strong>Context</strong> là chuẩn của Go để truyền timeout, deadline, cancel signal và dữ liệu nhẹ giữa các goroutine.</li>
+  <li>Nó giúp quản lý <strong>vòng đời</strong> của tác vụ hoặc request xuyên suốt hệ thống.</li>
+</ul>
+
+<h2>🔍 Phân tích chuyên sâu</h2>
+<ul>
+  <li>Context nên được truyền dưới dạng parameter đầu tiên: <code>func(ctx context.Context, ...)</code></li>
+  <li>Các loại context:
+    <ul>
+      <li><code>context.Background()</code>: gốc, không bao giờ bị cancel</li>
+      <li><code>context.TODO()</code>: placeholder khi chưa rõ context thực sự</li>
+      <li><code>context.WithCancel</code>, <code>WithTimeout</code>, <code>WithDeadline</code>: tạo context có khả năng dừng</li>
+    </ul>
+  </li>
+  <li>Context tự động cancel khi deadline timeout hoặc cha bị cancel</li>
+  <li>Lý tưởng dùng trong: HTTP request, job, stream, signal handling, database...</li>
+</ul>
+
+<h2>💡 Ví dụ thực tế</h2>
+<pre><code class="go">import (
+    "context"
+    "fmt"
+    "time"
+)
+
+func worker(ctx context.Context, name string) {
+    for {
+        select {
+        case <-ctx.Done():
+            fmt.Println("Stopped:", name)
+            return
+        default:
+            fmt.Println("Working:", name)
+            time.Sleep(500 * time.Millisecond)
+        }
+    }
+}
+
+func main() {
+    ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+    defer cancel()
+
+    go worker(ctx, "A")
+    go worker(ctx, "B")
+
+    <-ctx.Done()
+    fmt.Println("Main: Timeout reached")
+}
+</code></pre>
+
+<h2>📌 Ứng dụng hệ thống</h2>
+<ul>
+  <li>Context được dùng rộng rãi trong <strong>HTTP server</strong>, <strong>database/sql</strong>, <strong>gRPC</strong>, <strong>Kafka</strong>, etc.</li>
+  <li>Truyền <code>context.Context</code> đúng chuẩn giúp dễ debug, trace, stop task theo yêu cầu</li>
+  <li>Context hỗ trợ <strong>cancel propagation</strong> → goroutine con tự động dừng khi cha timeout</li>
+  <li><strong>Lưu ý:</strong> Không dùng context để lưu dữ liệu lớn hoặc logic — chỉ dùng để truyền metadata nhẹ.</li>
+</ul>
+<h2>📊 Flow: Truyền context từ Envoy xuống các tầng trong hệ thống</h2>
+
+<p>Trong hệ thống microservice dùng Envoy hoặc gRPC gateway, context thường được truyền xuyên suốt từ request gốc tới từng tầng function và database.</p>
+
+<pre><code>
+┌──────────────┐
+│ Envoy Proxy  │
+│ - Truyền header: x-request-id, deadline, trace-id
+│ - Forward HTTP/gRPC request
+└──────┬───────┘
+       │
+       ▼
+┌──────────────┐
+│ Gateway API  │
+│ - Tạo context gốc: context.WithTimeout(...)
+│ - Đính trace-id vào context
+└──────┬───────┘
+       │
+       ▼
+┌────────────────────────────┐
+│ Application Handler        │
+│ - ctx được truyền vào hàm │
+│   func(ctx context.Context)│
+└──────┬─────────────────────┘
+       │
+       ▼
+┌────────────────────────────┐
+│ Service Layer / Usecase    │
+│ - ctx tiếp tục được truyền│
+│ - Add logging/tracing tag │
+└──────┬─────────────────────┘
+       │
+       ▼
+┌────────────────────────────┐
+│ Database / Repository Layer│
+│ - Dùng ctx trong query:    │
+│   db.QueryContext(ctx, ...)│
+└────────────────────────────┘
+</code></pre>
+
+<h2>📌 Ý nghĩa thiết kế</h2>
+<ul>
+  <li><strong>Truyền context xuyên suốt</strong> giúp enforce timeout, cancel toàn bộ call chain khi request timeout từ đầu.</li>
+  <li><code>ctx</code> chứa metadata như trace-id, user-id → dùng cho log/tracing/monitoring.</li>
+  <li><code>db.QueryContext</code> giúp tự động abort query khi context bị cancel (timeout hoặc shutdown).</li>
+  <li>Việc propagate đúng context giúp bạn build hệ thống resilient, observable và debuggable.</li>
+</ul>
+
+
+<hr />
+<h1 id="11-error-handling-và-panicrecover">11. Error Handling và Panic/Recover</h1>
+
+<h2>🧠 Khái niệm tổng quát</h2>
+<ul>
+  <li><strong>Error</strong>: là giá trị trả về đầu tiên cho mọi hàm có thể thất bại – dạng <code>error</code> interface.</li>
+  <li><strong>Panic</strong>: ngắt luồng xử lý hiện tại ngay lập tức – chỉ nên dùng cho lỗi lập trình nghiêm trọng.</li>
+  <li><strong>Recover</strong>: giúp "bắt" panic trong <code>defer</code>, phục hồi điều khiển chương trình và tránh crash toàn bộ service.</li>
+</ul>
+
+<h2>🔍 Phân tích chuyên sâu</h2>
+<ul>
+  <li><code>error</code> nên được wrap lại để giữ ngữ cảnh: dùng <code>fmt.Errorf("thao tác thất bại: %w", err)</code>.</li>
+  <li>Dùng <code>errors.Is</code>, <code>errors.As</code>, <code>errors.Unwrap</code> để phân tích chain lỗi khi cần.</li>
+  <li><code>recover()</code> chỉ hoạt động bên trong <code>defer</code>. Bên ngoài sẽ không ngăn panic.</li>
+  <li>Go runtime khi panic:
+    <ul>
+      <li>Gọi toàn bộ defer stack</li>
+      <li>Nếu có recover → lấy lại điều khiển</li>
+      <li>Nếu không → in stacktrace và <strong>exit</strong></li>
+    </ul>
+  </li>
+</ul>
+
+<h2>💡 Ví dụ: error wrapping + panic/recover</h2>
+<pre><code class="go">func doSomething() error {
+    err := errors.New("kết nối thất bại")
+    return fmt.Errorf("lỗi khi gọi backend: %w", err)
+}
+
+func safeRun() {
+    defer func() {
+        if r := recover(); r != nil {
+            fmt.Println("Đã recover từ panic:", r)
+        }
+    }()
+    panic("hệ thống lỗi nghiêm trọng")
+}
+</code></pre>
+<h2>🧠 Graceful Shutdown hoạt động như thế nào?</h2>
+<ul>
+  <li>Khi bạn nhấn <code>Ctrl+C</code> hoặc hệ thống gửi tín hiệu <code>SIGINT</code>, <code>SIGTERM</code> (từ orchestrator như Kubernetes), Go program có thể <strong>bắt tín hiệu này</strong> qua <code>os/signal</code>.</li>
+  <li>Khi bắt được tín hiệu, bạn gọi <code>cancel()</code> từ <code>context.WithCancel</code> để truyền tín hiệu dừng xuống tất cả các tầng bên dưới.</li>
+  <li>Mỗi goroutine đang chạy cần lắng nghe <code>ctx.Done()</code> để biết khi nào cần dừng.</li>
+  <li>Bạn có thể dùng <code>sync.WaitGroup</code> để đảm bảo tất cả goroutine xử lý xong trước khi main kết thúc.</li>
+</ul>
+
+<h2>💡 Ví dụ: shutdown đợi worker xử lý xong</h2>
+<pre><code class="go">func main() {
+    ctx, cancel := context.WithCancel(context.Background())
+    defer cancel()
+
+    sig := make(chan os.Signal, 1)
+    signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM)
+
+    go func() {
+        <-sig
+        fmt.Println("Nhận tín hiệu tắt, huỷ context...")
+        cancel()
+    }()
+
+    var wg sync.WaitGroup
+    wg.Add(1)
+
+    go func() {
+        defer wg.Done()
+        runJob(ctx)
+    }()
+
+    wg.Wait() // đợi toàn bộ goroutine hoàn tất
+    fmt.Println("Shutdown hoàn tất")
+}
+
+func runJob(ctx context.Context) {
+    for {
+        select {
+        case <-ctx.Done():
+            fmt.Println("Dừng xử lý công việc")
+            return
+        default:
+            fmt.Println("Đang xử lý công việc...")
+            time.Sleep(1 * time.Second)
+        }
+    }
+}
+</code></pre>
+
+<h2>📌 Tóm tắt lợi ích Graceful Shutdown</h2>
+<ul>
+  <li>Cho phép hệ thống <strong>hoàn tất công việc dang dở</strong> trước khi thoát.</li>
+  <li>Giải phóng tài nguyên đúng cách (database, network, file, goroutine).</li>
+  <li>Không bị mất dữ liệu hoặc ngắt kết nối giữa chừng.</li>
+  <li>Chuẩn kỹ thuật bắt buộc với <strong>microservice, HTTP/gRPC API, cronjob</strong> production.</li>
+</ul>
+
+
+<h2>📌 Ứng dụng hệ thống</h2>
+<ul>
+  <li><strong>Error wrapping</strong>: duy trì stack trace, logic tầng cao dễ debug.</li>
+  <li><strong>Recover</strong>: chống crash hệ thống — đặc biệt ở các goroutine, worker hoặc middleware.</li>
+  <li><strong>Graceful shutdown</strong>: bắt buộc ở service production — tránh mất dữ liệu, close connection đúng cách.</li>
+</ul>
+
+
+
+<hr />
+<h1 id="12-logging-nâng-cao-với-logrus-zap-zerolog">12. Logging nâng cao với logrus, zap, zerolog</h1>
+
+<h2>🧠 Khái niệm tổng quát</h2>
+<ul>
+  <li>Logging là thành phần cốt lõi trong mọi service để <strong>trace, debug, audit</strong> và <strong>monitor</strong>.</li>
+  <li>Go hỗ trợ logging qua nhiều thư viện nổi bật:
+    <ul>
+      <li><strong>logrus</strong>: phổ biến, đơn giản, dễ dùng.</li>
+      <li><strong>zap</strong>: hiệu năng cao, JSON structured log, production ready.</li>
+      <li><strong>zerolog</strong>: tốc độ cao, encode trực tiếp vào writer.</li>
+    </ul>
+  </li>
+</ul>
+
+<h2>🔍 So sánh 3 thư viện phổ biến</h2>
+<table>
+<thead>
+<tr><th>Thư viện</th><th>Ưu điểm</th><th>Nhược điểm</th></tr>
+</thead>
+<tbody>
+<tr>
+  <td>logrus</td>
+  <td>Dễ dùng, phổ biến</td>
+  <td>Hiệu năng thấp hơn (dùng reflection)</td>
+</tr>
+<tr>
+  <td>zap</td>
+  <td>Structured, nhanh, JSON tốt</td>
+  <td>API hơi verbose</td>
+</tr>
+<tr>
+  <td>zerolog</td>
+  <td>Rất nhanh, binary-safe</td>
+  <td>API khác biệt, khó debug nếu quen logrus</td>
+</tr>
+</tbody>
+</table>
+
+<h2>💡 Ví dụ sử dụng logrus</h2>
+<pre><code class="go">import log "github.com/sirupsen/logrus"
+
+func main() {
+    log.SetFormatter(&log.JSONFormatter{})
+    log.SetLevel(log.InfoLevel)
+
+    log.WithFields(log.Fields{
+        "user_id":  123,
+        "action":   "login",
+    }).Info("User logged in")
+}
+</code></pre>
+
+<h2>💡 Ví dụ zap production logger</h2>
+<pre><code class="go">import (
+    "go.uber.org/zap"
+)
+
+func main() {
+    logger, _ := zap.NewProduction()
+    defer logger.Sync()
+
+    logger.Info("Xử lý xong",
+        zap.String("user", "abc"),
+        zap.Int("duration_ms", 124),
+    )
+}
+</code></pre>
+
+<h2>📌 Best Practice logging</h2>
+<ul>
+  <li><strong>Không</strong> dùng <code>fmt.Println</code> cho production log.</li>
+  <li>Sử dụng logging <strong>structured (JSON)</strong> để máy có thể parse được.</li>
+  <li>Log theo <strong>ngữ cảnh</strong>: user, request-id, trace-id (log-enrichment theo context).</li>
+  <li>Tách <strong>stdout</strong> (info, debug) và <strong>stderr</strong> (error) nếu chạy trong container/Kubernetes.</li>
+  <li>Kết hợp với tools như <code>ELK stack</code>, <code>Grafana Loki</code> để visualize và alert.</li>
+</ul>
+
+
+<hr />
+<h1 id="13-testing-benchmark-table-driven-test">13. Testing, Benchmark, Table-Driven Test</h1>
+
+<h2>🧠 Tổng quan testing trong Go</h2>
+<ul>
+  <li>Go cung cấp testing built-in qua package <code>testing</code>.</li>
+  <li>Test file có hậu tố <code>_test.go</code>, tên hàm bắt đầu bằng <code>Test*</code>.</li>
+  <li>Benchmark test dùng để đo hiệu năng (<code>Benchmark*</code>).</li>
+</ul>
+
+<h2>💡 Ví dụ đơn giản</h2>
+<pre><code class="go">func Add(a, b int) int {
+    return a + b
+}
+
+func TestAdd(t *testing.T) {
+    result := Add(2, 3)
+    if result != 5 {
+        t.Errorf("expected 5, got %d", result)
+    }
+}
+</code></pre>
+
+<h2>🧪 Table-Driven Test (pattern chuẩn)</h2>
+<pre><code class="go">func TestAddTable(t *testing.T) {
+    cases := []struct {
+        name     string
+        a, b, out int
+    }{
+        {"2+3", 2, 3, 5},
+        {"-1+1", -1, 1, 0},
+    }
+
+    for _, c := range cases {
+        t.Run(c.name, func(t *testing.T) {
+            res := Add(c.a, c.b)
+            if res != c.out {
+                t.Errorf("got %d, want %d", res, c.out)
+            }
+        })
+    }
+}
+</code></pre>
+
+<h2>⚙ Benchmark</h2>
+<pre><code class="go">func BenchmarkAdd(b *testing.B) {
+    for i := 0; i < b.N; i++ {
+        _ = Add(1, 2)
+    }
+}
+</code></pre>
+
+<h2>📌 Tips</h2>
+<ul>
+  <li>Dùng <code>go test -v ./...</code> để test toàn bộ module.</li>
+  <li>Dùng <code>-bench</code> để benchmark, <code>-cover</code> để đo coverage.</li>
+  <li>Dùng <code>assert</code> libs như <code>stretchr/testify</code> khi test lớn.</li>
+</ul>
+
+<hr />
+<hr />
+<h1 id="14-debugging-race-condition-deadlock">14. Debugging, Race Condition, Deadlock</h1>
+
+<h2>🧠 Khái niệm tổng quát</h2>
+<ul>
+  <li><strong>Race condition</strong>: khi nhiều goroutine truy cập/ghi vào vùng nhớ mà không đồng bộ → dữ liệu không nhất quán, hành vi ngẫu nhiên.</li>
+  <li><strong>Deadlock</strong>: khi tất cả goroutine đều block → chương trình đứng im vĩnh viễn.</li>
+</ul>
+
+<h2>🔍 Phân tích chuyên sâu: Các lỗi race phổ biến</h2>
+
+<ul>
+  <li><strong>1. Ghi/đọc vào shared variable mà không có lock</strong></li>
+  <li><strong>2. Channel write không có goroutine nhận → block → deadlock</strong></li>
+  <li><strong>3. Truy cập slice/map cùng lúc → race hoặc panic</strong></li>
+  <li><strong>4. Database tx/context bị ghi đè qua goroutine</strong></li>
+  <li><strong>5. Truy cập pointer không đồng bộ</strong></li>
+</ul>
+
+<h2>💣 Ví dụ lỗi Race Condition thực tế</h2>
+
+<pre><code class="go">// Ghi vào biến x từ nhiều goroutine (race)
+var x int
+for i := 0; i < 100; i++ {
+    go func() {
+        x++
+    }()
+}
+</code></pre>
+
+<pre><code class="go">// Race khi truy cập slice cùng lúc
+var nums = []int{}
+for i := 0; i < 10; i++ {
+    go func(val int) {
+        nums = append(nums, val) // race!
+    }(i)
+}
+</code></pre>
+
+<pre><code class="go">// Race khi dùng cùng transaction
+func main() {
+    tx, _ := db.BeginTx(ctx, nil)
+
+    go func() {
+        tx.Exec("UPDATE users SET ...") // lỗi nếu context bị cancel hoặc tx dùng sai thread
+    }()
+}
+</code></pre>
+
+<h2>🧱 Deadlock thường gặp</h2>
+<pre><code class="go">// Channel không có người nhận → block mãi mãi
+ch := make(chan int)
+ch <- 1 // block
+</code></pre>
+
+<pre><code class="go">// Goroutine chờ nhau theo vòng tròn
+mu1, mu2 := sync.Mutex{}, sync.Mutex{}
+
+go func() {
+    mu1.Lock(); defer mu1.Unlock()
+    mu2.Lock(); defer mu2.Unlock()
+}()
+
+go func() {
+    mu2.Lock(); defer mu2.Unlock()
+    mu1.Lock(); defer mu1.Unlock()
+}()
+</code></pre>
+
+<h2>🔍 Phân tích nguyên nhân & fix</h2>
+<ul>
+  <li><code>append()</code> trên slice không đồng bộ cần dùng <code>sync.Mutex</code> hoặc <code>channel</code> làm queue</li>
+  <li>Không chia sẻ <code>tx</code> hoặc <code>context</code> giữa goroutine khi xử lý DB</li>
+  <li>Không dùng map hoặc slice không đồng bộ trong handler gốc</li>
+  <li>Luôn close channel ở phía gửi; tránh close 2 lần</li>
+</ul>
+
+<h2>🧪 Cách phát hiện bug race/deadlock</h2>
+<ul>
+  <li>Dùng <code>go run -race</code> hoặc <code>go test -race</code> → hiển thị dòng code xảy ra race</li>
+  <li>Dùng <code>pprof</code> → theo dõi goroutine blocking</li>
+  <li>Dùng <code>runtime.NumGoroutine()</code> để kiểm soát leak</li>
+</ul>
+
+<h2>📌 Gợi ý kỹ thuật hệ thống</h2>
+<ul>
+  <li>Luôn xác định biến shared cần bảo vệ bằng lock hoặc truyền dữ liệu qua channel</li>
+  <li>Truyền dữ liệu → dùng channel; chia sẻ trạng thái → dùng mutex</li>
+  <li>Tránh close channel từ nhiều nơi</li>
+  <li>Viết log theo traceID để dễ theo dấu goroutine trong production</li>
+</ul>
+
+<hr />
+<h1 id="15-memory-management--escape-analysis">15. Memory Management & Escape Analysis</h1>
+
+<h2>🧠 Tổng quan về quản lý bộ nhớ trong Go</h2>
+<ul>
+  <li>Go sử dụng <strong>managed memory model</strong> – bạn không cần malloc/free thủ công.</li>
+  <li>Go runtime quyết định biến được cấp phát trên stack hay heap.</li>
+  <li><strong>Escape Analysis</strong>: quá trình xác định biến có “thoát” khỏi scope hiện tại không → nếu có → đưa lên heap.</li>
+</ul>
+
+<h2>🔍 Stack vs Heap</h2>
+<ul>
+  <li><strong>Stack</strong>: nhanh, vùng nhớ tạm thời, tự động reclaim.</li>
+  <li><strong>Heap</strong>: cấp phát động, cần GC quét để reclaim, chậm hơn.</li>
+  <li>Escape sang heap = tăng áp lực GC, giảm hiệu năng.</li>
+</ul>
+
+<h2>💡 Ví dụ: khi nào biến escape</h2>
+<pre><code class="go">// Không escape - nằm trên stack
+func stackAlloc() int {
+    x := 42
+    return x
+}
+
+// Escape - trả về pointer → lên heap
+func heapAlloc() *int {
+    x := 42
+    return &x
+}
+</code></pre>
+
+<h2>🧪 Xem kết quả Escape Analysis</h2>
+<pre><code class="bash">go build -gcflags="-m" ./main.go
+</code></pre>
+<p>Kết quả:</p>
+<pre><code># command-line-arguments
+./main.go:10:6: moved to heap: x
+</code></pre>
+
+<h2>📌 Gợi ý tối ưu</h2>
+<ul>
+  <li>Tránh trả về pointer đến local var nếu không cần thiết.</li>
+  <li>Tránh giữ reference đến biến lớn trong closure nếu closure sống lâu.</li>
+  <li>Chia nhỏ function để giúp compiler nhận ra vùng không cần escape.</li>
+</ul>
+<hr />
+<h1 id="16-garbage-collection-và-runtime-scheduler">16. Garbage Collection và Runtime Scheduler</h1>
+
+<h2>🧠 Tổng quan GC và Scheduler</h2>
+<ul>
+  <li><strong>Garbage Collection (GC)</strong>: hệ thống tự động giải phóng bộ nhớ không còn dùng nữa trên heap.</li>
+  <li><strong>Go Scheduler</strong>: cơ chế quản lý goroutine → ánh xạ M:N (many goroutine → many OS threads).</li>
+</ul>
+
+<h2>🧠 GC: cơ chế, đặc điểm</h2>
+<ul>
+  <li>Go sử dụng GC kiểu <strong>tracing + concurrent + generational</strong>.</li>
+  <li>GC không dừng toàn bộ chương trình (stop-the-world rất ngắn).</li>
+  <li>Kích hoạt khi heap lớn, runtime trigger, hoặc gọi <code>runtime.GC()</code>.</li>
+</ul>
+
+<h2>💡 Scheduler và GOMAXPROCS</h2>
+<ul>
+  <li>Scheduler gồm:
+    <ul>
+      <li><strong>G</strong>: Goroutine</li>
+      <li><strong>M</strong>: OS Thread</li>
+      <li><strong>P</strong>: Processor – phân phối G lên M</li>
+    </ul>
+  </li>
+  <li><code>GOMAXPROCS</code>: giới hạn số core Go được dùng đồng thời.</li>
+</ul>
+
+<h2>📌 Tối ưu</h2>
+<ul>
+  <li>Dọn reference không dùng để GC thu hồi nhanh hơn.</li>
+  <li>Hạn chế object lớn sống lâu → giảm áp lực GC.</li>
+  <li>Dùng <code>sync.Pool</code> để reuse object.</li>
+</ul>
+<h2>🧠 GC hoạt động như thế nào (Deep Working)</h2>
+
+<ul>
+  <li>Go GC hoạt động theo chu kỳ, gồm 3 phase chính:
+    <ol>
+      <li><strong>STW - Stop the World (Prepare)</strong>: tạm dừng toàn bộ goroutine để xác định root set.</li>
+      <li><strong>Mark phase (concurrent)</strong>: đánh dấu tất cả object còn được tham chiếu.</li>
+      <li><strong>Sweep phase</strong>: thu dọn object không còn dùng, trả lại heap.</li>
+    </ol>
+  </li>
+
+  <li>STW diễn ra ngắn (~100µs), sau đó goroutine tiếp tục chạy song song với phase mark.</li>
+  <li>GC sử dụng <strong>tri-color marking</strong>: white (chưa quét), grey (đang quét), black (quét xong).</li>
+  <li>Ưu tiên dọn object nhỏ, ngắn hạn (young gen) – giống generational GC trong JVM.</li>
+</ul>
+
+<h2>⏱ Khi nào GC được trigger?</h2>
+<ul>
+  <li>Heap growth vượt ngưỡng (<code>GOGC</code> % growth)</li>
+  <li>Manually gọi <code>runtime.GC()</code></li>
+  <li>Trình runtime thấy tỷ lệ goroutine idle phù hợp</li>
+</ul>
+
+<h2>⚙ Tham số điều chỉnh GC</h2>
+<ul>
+  <li><code>GOGC</code>: tỉ lệ tăng heap để kích hoạt GC (default 100 → GC chạy khi heap gấp đôi)</li>
+  <li>Set <code>GOGC=off</code> để disable GC (chỉ dùng khi debug)</li>
+</ul>
+
+<h2>📌 Ảnh hưởng hệ thống & Tối ưu</h2>
+<ul>
+  <li>GC càng chạy thường xuyên → giảm memory usage nhưng tốn CPU.</li>
+  <li>GC chạy ít → tăng latency request do heap phình to.</li>
+  <li><strong>Optimize:</strong>
+    <ul>
+      <li>Tránh return pointer → giữ stack allocation</li>
+      <li>Dọn nil object sớm (giúp mark nhanh)</li>
+      <li>Dùng <code>sync.Pool</code> để giảm new()</li>
+    </ul>
+  </li>
+</ul>
+
+<hr />
+<h1 id="17-build-system-và-cross-compilation">17. Build System và Cross Compilation</h1>
+
+<h2>🧠 Tổng quan hệ thống build trong Go</h2>
+<ul>
+  <li>Go dùng command line tool `go build` để biên dịch source code thành binary standalone.</li>
+  <li>Không cần makefile, không cần linker script – tất cả được tích hợp sẵn trong Go toolchain.</li>
+</ul>
+
+<h2>🔍 Cơ chế hoạt động build</h2>
+<ul>
+  <li><code>go build</code> thực hiện:
+    <ol>
+      <li>Phân tích dependency từ <code>import</code></li>
+      <li>Resolve module qua <code>go.mod</code></li>
+      <li>Compile từng package → assemble → link thành binary</li>
+    </ol>
+  </li>
+  <li>Build output là binary tự đủ (no external runtime needed)</li>
+</ul>
+
+<h2>🌍 Cross Compilation</h2>
+<ul>
+  <li>Go hỗ trợ cross-build mặc định – chỉ cần set biến môi trường:</li>
+</ul>
+<pre><code class="bash">GOOS=linux GOARCH=amd64 go build -o app-linux
+GOOS=windows GOARCH=386 go build -o app.exe
+</code></pre>
+
+<h2>📌 Ảnh hưởng hệ thống & Tối ưu</h2>
+<ul>
+  <li>Go build nhanh, không cần toolchain ngoài → phù hợp CI/CD realtime.</li>
+  <li>Binary Go tự đủ → deploy cực kỳ dễ dàng.</li>
+  <li>Dọn dependency bằng <code>go mod tidy</code> để build sạch và nhẹ hơn.</li>
+</ul>
+
+<hr />
+<h1 id="18-generics-type-parameter-và-constraint">18. Generics: Type Parameter và Constraint</h1>
+
+<h2>🧠 Tổng quan về Generics trong Go</h2>
+<ul>
+  <li>Go hỗ trợ generics từ bản <strong>1.18+</strong> thông qua <strong>type parameter</strong>.</li>
+  <li>Generics giúp bạn viết function, struct, method có khả năng tái sử dụng, nhưng vẫn giữ <strong>type-safety</strong>.</li>
+  <li>Không còn cần ép kiểu bằng interface trống hay code lặp cho từng kiểu.</li>
+</ul>
+
+<h2>🔎 Tổng hợp các loại áp dụng generics</h2>
+<table>
+<thead>
+<tr><th>Loại</th><th>Áp dụng</th><th>Ví dụ</th></tr>
+</thead>
+<tbody>
+<tr>
+  <td><strong>Function</strong></td>
+  <td>Hàm dùng chung cho nhiều kiểu</td>
+  <td><code>func Equal[T comparable](a, b T)</code></td>
+</tr>
+<tr>
+  <td><strong>Struct</strong></td>
+  <td>Generic container, cache, stack...</td>
+  <td><code>type Stack[T any]</code></td>
+</tr>
+<tr>
+  <td><strong>Map</strong></td>
+  <td>Không generic trực tiếp<br>nhưng có thể wrap qua struct</td>
+  <td><code>type Store[K comparable, V any]</code></td>
+</tr>
+<tr>
+  <td><strong>Slice</strong></td>
+  <td>Dùng tốt với hàm <code>Filter</code>, <code>Map</code>, <code>Reduce</code></td>
+  <td><code>func Filter[T any](in []T, fn func(T) bool)</code></td>
+</tr>
+<tr>
+  <td><strong>Interface</strong></td>
+  <td>Gắn constraint để enforce behavior</td>
+  <td><code>type Adder[T any] interface { Add(T) T }</code></td>
+</tr>
+<tr>
+  <td><strong>Function type</strong></td>
+  <td>Generics áp dụng cho callback/higher order</td>
+  <td><code>func Map[T any, R any](in []T, f func(T) R)</code></td>
+</tr>
+</tbody>
+</table>
+
+<h2>📦 Ví dụ tổng hợp áp dụng thực tế</h2>
+
+<pre><code class="go">// Generic function
+func Max[T constraints.Ordered](a, b T) T {
+    if a > b { return a }
+    return b
+}
+
+// Generic struct
+type Cache[K comparable, V any] struct {
+    store map[K]V
+}
+
+// Generic slice operator
+func Filter[T any](in []T, predicate func(T) bool) []T {
+    var out []T
+    for _, v := range in {
+        if predicate(v) {
+            out = append(out, v)
+        }
+    }
+    return out
+}
+</code></pre>
+
+<h2>🧠 Về constraints</h2>
+<ul>
+  <li><code>any</code>: đại diện cho tất cả các kiểu</li>
+  <li><code>comparable</code>: dùng cho key map, so sánh <code>==</code>, <code>!=</code></li>
+  <li><code>constraints.Ordered</code>: dùng cho kiểu có thể <code>&lt;, &gt;</code></li>
+  <li>Có thể định nghĩa <strong>interface constraint riêng</strong> nếu muốn enforce method</li>
+</ul>
+
+<h2>🧠 Ưu điểm vượt trội</h2>
+<ul>
+  <li>Loại bỏ lặp code cho mỗi kiểu</li>
+  <li>Đảm bảo type safety mà không cần interface{} + type assertion</li>
+  <li>Gần hơn với expressive pattern của functional programming</li>
+</ul>
+
+<h2>⚠️ Bất lợi và giới hạn hiện tại</h2>
+<ul>
+  <li>Không có runtime type inference hoặc reflection trên T</li>
+  <li>Không thể dùng toán tử tùy ý (ngoài constraint)</li>
+  <li>Dễ lạm dụng → code khó đọc, debug kém</li>
+  <li>Không tương thích tốt với tất cả third-party lib</li>
+</ul>
+
+<h2>📌 Gợi ý khi dùng generics trong hệ thống</h2>
+<ul>
+  <li>Dùng cho lib xử lý collection: Pagination, Filter, Sorting...</li>
+  <li>Tránh dùng generics trong API layer hoặc business logic đặc thù</li>
+  <li>Viết constraint rõ ràng để code dễ đọc, không để <code>[T any]</code> quá rộng</li>
+  <li>Dùng generics kết hợp interface để enforce behavior rõ ràng</li>
+</ul>
+<hr />
+<h1 id="19-api--middleware-rest-grpc-interceptor">19. API & Middleware: REST, gRPC, Interceptor</h1>
+
+<h2>🧠 So sánh HTTP vs gRPC</h2>
+<table>
+<thead>
+<tr><th>Tiêu chí</th><th>HTTP REST</th><th>gRPC</th></tr>
+</thead>
+<tbody>
+<tr><td>Protocol</td><td>HTTP/1.1, JSON</td><td>HTTP/2, Protocol Buffers</td></tr>
+<tr><td>Contract</td><td>Không ràng buộc (OpenAPI optional)</td><td>Strict contract qua .proto</td></tr>
+<tr><td>Serialization</td><td>Text (JSON)</td><td>Binary (Protobuf) – nhanh hơn</td></tr>
+<tr><td>Streaming</td><td>Khó / chunked encoding</td><td>Built-in (client, server, bidi)</td></tr>
+<tr><td>Tooling</td><td>Curl, Postman</td><td>grpcurl, Evans, protobuf compiler</td></tr>
+<tr><td>Use case</td><td>Public API, Gateway, dễ debug</td><td>Service internal, high perf</td></tr>
+</tbody>
+</table>
+
+<h2>🧰 Các thư viện phổ biến</h2>
+<ul>
+  <li><code>net/http</code>: core lib, ổn định, native middleware</li>
+  <li><code>gin</code>: nhanh, có middleware, bind JSON dễ</li>
+  <li><code>echo</code>: giống gin, thêm nhiều tiện ích: group, context-rich</li>
+  <li><code>grpc-go</code>: lib chính thống gRPC từ Google</li>
+</ul>
+
+<h2>📦 Middleware là gì?</h2>
+<ul>
+  <li>Hàm bao ngoài handler chính → xử lý logic phụ: auth, log, recovery...</li>
+  <li>Dùng chain để xây dựng pipeline xử lý request.</li>
+</ul>
+
+<pre><code class="go">// Middleware trong gin
+func AuthMiddleware(c *gin.Context) {
+    token := c.GetHeader("Authorization")
+    if token == "" {
+        c.AbortWithStatus(401)
+        return
+    }
+    c.Next()
+}
+</code></pre>
+
+<h2>🔧 gRPC: cấu trúc và generate code</h2>
+<pre><code class="proto">syntax = "proto3";
+
+package helloworld;
+
+service Greeter {
+  rpc SayHello (HelloRequest) returns (HelloReply);
+}
+
+message HelloRequest {
+  string name = 1;
+}
+message HelloReply {
+  string message = 1;
+}
+</code></pre>
+
+<pre><code class="bash"># Generate Go code
+protoc --go_out=. --go-grpc_out=. example.proto
+</code></pre>
+
+<h2>💬 Interceptor (gRPC middleware)</h2>
+<ul>
+  <li>Interceptor là middleware cho gRPC – hoạt động trước/sau RPC logic.</li>
+  <li>Áp dụng cho: logging, tracing, recovery, auth, inject header...</li>
+  <li>Chia 2 loại: <code>UnaryInterceptor</code> và <code>StreamInterceptor</code></li>
+</ul>
+
+<pre><code class="go">func UnaryLogger(
+    ctx context.Context,
+    req interface{},
+    info *grpc.UnaryServerInfo,
+    handler grpc.UnaryHandler,
+) (resp interface{}, err error) {
+    log.Println("RPC:", info.FullMethod)
+    return handler(ctx, req)
+}
+</code></pre>
+
+<h2>📬 Header / Metadata truyền trong gRPC</h2>
+<pre><code class="go">// Client gửi header
+md := metadata.Pairs("x-trace-id", "abc123")
+ctx := metadata.NewOutgoingContext(context.Background(), md)
+
+// Server đọc header
+md, ok := metadata.FromIncomingContext(ctx)
+traceID := md["x-trace-id"]
+</code></pre>
+
+<h2>📌 Gợi ý hệ thống</h2>
+<ul>
+  <li>REST phù hợp public API, dễ debug.</li>
+  <li>gRPC phù hợp nội bộ → high throughput, stream.</li>
+  <li>Dùng interceptor để không viết lại logging/auth/tracing ở mọi handler.</li>
+  <li>Header/metadata giúp trace qua nhiều service – nhất là trong hệ thống microservice.</li>
+</ul>
+<h2>🧠 Các loại RPC trong gRPC</h2>
+<ul>
+  <li><strong>Unary RPC</strong>: 1 request → 1 response (giống HTTP truyền thống)</li>
+  <li><strong>Server Streaming</strong>: 1 request → nhiều response (client đọc liên tục)</li>
+  <li><strong>Client Streaming</strong>: nhiều request → 1 response (client gửi liên tục rồi server trả kết quả)</li>
+  <li><strong>Bidirectional Streaming</strong>: nhiều request ↔ nhiều response (giống WebSocket)</li>
+</ul>
+
+<pre><code class="proto">service Chat {
+  rpc SendMessage (Message) returns (Ack);               // Unary
+  rpc StreamMessages (Room) returns (stream Message);    // Server Stream
+  rpc UploadFile (stream Chunk) returns (UploadStatus);  // Client Stream
+  rpc ChatStream (stream Message) returns (stream Message); // BiDi Stream
+}
+</code></pre>
+
+<h2>📦 REST vs gRPC: Body và Serialization</h2>
+<table>
+<thead>
+<tr><th>Aspect</th><th>REST (JSON)</th><th>gRPC (Protobuf)</th></tr>
+</thead>
+<tbody>
+<tr><td>Request/Response</td><td>Body là JSON (text)</td><td>Binary protobuf</td></tr>
+<tr><td>Size</td><td>Lớn hơn vì nhiều ký tự và field name</td><td>Nhỏ hơn nhờ encoding</td></tr>
+<tr><td>Speed</td><td>Parse chậm hơn, dễ debug</td><td>Parse nhanh hơn, khó debug bằng tay</td></tr>
+<tr><td>Streaming</td><td>Khó, cần chunked/long polling</td><td>Built-in stream HTTP/2</td></tr>
+</tbody>
+</table>
+
+<h2>🔗 Giao tiếp giữa các service (microservice)</h2>
+<ul>
+  <li>gRPC được tối ưu để dùng giữa các service trong nội bộ:</li>
+  <li>
+    Ưu điểm:
+    <ul>
+      <li>Strict schema (protoc)</li>
+      <li>Compact binary → tiết kiệm băng thông</li>
+      <li>Bi-directional streaming: realtime và push data dễ dàng</li>
+      <li>Code generation: client/server auto → tránh bug manual</li>
+    </ul>
+  </li>
+  <li>
+    Các service gRPC có thể kết nối nhau qua:
+    <ul>
+      <li>Static IP hoặc service discovery (Consul, Kubernetes DNS)</li>
+      <li>gRPC-Gateway để expose HTTP → gRPC hybrid</li>
+      <li>Interconnect thông qua Envoy Proxy hoặc gRPC LoadBalancer</li>
+    </ul>
+  </li>
+</ul>
+
+<h2>🚀 Tối ưu hóa gRPC trong hệ thống</h2>
+<ul>
+  <li>Định nghĩa proto rõ ràng, dùng option để map HTTP nếu cần gateway</li>
+  <li>Truyền trace-id qua metadata để theo dõi request</li>
+  <li>Dùng interceptor để chia nhỏ concern (log, validate, panic recovery)</li>
+  <li>Ưu tiên bidirectional stream cho các use case realtime (chat, tracking...)</li>
+</ul>
+<hr />
+<h1 id="20-error-wrapping-stacktrace-và-structured-logging">20. Error Wrapping, Stacktrace, và Structured Logging</h1>
+
+<h2>🧠 Tổng quan</h2>
+<ul>
+  <li>Go xử lý lỗi qua giá trị kiểu <code>error</code> thay vì throw/catch.</li>
+  <li><strong>Error Wrapping</strong>: giúp giữ lại gốc lỗi khi truyền qua nhiều lớp.</li>
+  <li><strong>Stacktrace</strong>: dùng để trace ngược nguồn gốc lỗi → debug production.</li>
+  <li><strong>Structured Logging</strong>: log có field rõ ràng (JSON/key-value) → dễ search, index, alert.</li>
+</ul>
+
+<h2>🔍 Error Wrapping (Go 1.13+)</h2>
+<pre><code class="go">if err := doSomething(); err != nil {
+    return fmt.Errorf("gọi xử lý thất bại: %w", err)
+}
+
+if errors.Is(err, os.ErrNotExist) {
+    // lỗi cụ thể
+}
+
+var pathErr *os.PathError
+if errors.As(err, &pathErr) {
+    fmt.Println("Path lỗi:", pathErr.Path)
+}
+</code></pre>
+
+<h2>📦 Stacktrace (pkg/errors hoặc zap)</h2>
+<pre><code class="go">err := errors.Wrap(err, "ngữ cảnh thêm")
+fmt.Printf("%+v\\n", err) // đầy đủ stack trace
+</code></pre>
+
+<h2>💡 Structured Logging (logrus, zap, zerolog)</h2>
+<pre><code class="go">log.WithFields(log.Fields{
+    "user_id": 42,
+    "action":  "create_order",
+}).Error("Xảy ra lỗi")
+</code></pre>
+
+<h2>📌 Gợi ý hệ thống</h2>
+<ul>
+  <li>Always wrap error tại biên (usecase/service boundary)</li>
+  <li>Structured log để theo dõi, alert qua ELK / Grafana</li>
+  <li>Đính trace-id vào log → trace toàn hành trình request</li>
+  <li>Middleware → log panic, recover, status code, latency</li>
+</ul>
+<hr />
+<h1 id="21-staticcheck-golangci-lint-go-vet-go-fmt">21. Staticcheck, GolangCI-Lint, go vet, go fmt</h1>
+
+<h2>🧠 Mục tiêu</h2>
+<ul>
+  <li>Phát hiện lỗi tiềm ẩn, anti-pattern, bug chưa lộ bằng runtime.</li>
+  <li>Chuẩn hoá style code, đảm bảo tính nhất quán trong team.</li>
+</ul>
+
+<h2>🔍 Công cụ phổ biến</h2>
+<table>
+<thead><tr><th>Công cụ</th><th>Chức năng</th></tr></thead>
+<tbody>
+<tr><td><code>go fmt</code></td><td>Format lại code theo chuẩn Go</td></tr>
+<tr><td><code>go vet</code></td><td>Bắt lỗi logic (shadow, sai kiểu printf...)</td></tr>
+<tr><td><code>staticcheck</code></td><td>Phân tích logic nâng cao: unreachable, nil check...</td></tr>
+<tr><td><code>golangci-lint</code></td><td>Chạy nhiều linter cùng lúc, tích hợp CI</td></tr>
+</tbody>
+</table>
+
+<h2>💡 Ví dụ lỗi</h2>
+<pre><code class="go">fmt.Printf("%d", "abc") // sai kiểu → vet
+
+if x == nil || x == nil { } // check thừa → staticcheck
+
+unused := 123 // không dùng → unused
+</code></pre>
+
+<h2>⚙ Cấu hình GolangCI-Lint</h2>
+<pre><code class="yaml">linters:
+  enable:
+    - govet
+    - errcheck
+    - staticcheck
+    - unused
+run:
+  timeout: 3m
+  tests: true
+</code></pre>
+
+<h2>📌 Gợi ý áp dụng</h2>
+<ul>
+  <li>Dùng <code>go fmt</code> trong pre-commit hoặc CI</li>
+  <li>Tích hợp golangci-lint vào GitHub Actions để check toàn bộ project</li>
+  <li>Dùng <code>//nolint</code> đúng mục tiêu – không suppress toàn file</li>
+</ul>
+
+<hr />
+<h1 id="22-design-patterns-trong-go">22. Design Patterns trong Go</h1>
+
+<h2>🧠 Tổng quan</h2>
+<ul>
+  <li>Go không ép dùng OOP – nhiều pattern cổ điển cần viết lại theo idiomatic Go.</li>
+  <li>Go ưu tiên composition, interface nhẹ và function-first.</li>
+</ul>
+
+<h2>📦 Các Pattern phổ biến trong Go</h2>
+<ul>
+  <li><strong>Factory</strong>: sinh object theo config</li>
+  <li><strong>Singleton</strong>: duy nhất 1 instance global</li>
+  <li><strong>Strategy</strong>: inject logic runtime</li>
+  <li><strong>Builder</strong>: khởi tạo có cấu hình theo bước</li>
+  <li><strong>Decorator</strong>: thêm behavior qua wrapper</li>
+  <li><strong>Functional Option</strong>: idiomatic Go cho config linh hoạt</li>
+</ul>
+
+<h2>🏗 Functional Option – pattern Go ưu tiên</h2>
+<pre><code class="go">type Option func(*Server)
+
+func WithTLS(enable bool) Option {
+    return func(s *Server) {
+        s.TLS = enable
+    }
+}
+</code></pre>
+
+
+<h2>🏗 Factory Pattern</h2>
+<pre><code class="go">type DB interface { Connect() error }
+
+type MySQL struct{}
+func (MySQL) Connect() error { return nil }
+
+func NewDB(engine string) DB {
+    switch engine {
+    case "mysql":
+        return MySQL{}
+    default:
+        panic("unsupported")
+    }
+}
+</code></pre>
+
+<h2>🔁 Singleton Pattern</h2>
+<pre><code class="go">var instance *Logger
+var once sync.Once
+
+func GetLogger() *Logger {
+    once.Do(func() {
+        instance = &Logger{}
+    })
+    return instance
+}
+</code></pre>
+
+<h2>⚙ Strategy Pattern</h2>
+<pre><code class="go">type Compressor interface {
+    Compress(data string) string
+}
+
+type Gzip struct{}
+func (Gzip) Compress(data string) string { return "GZIP:" + data }
+
+func Run(c Compressor, data string) {
+    fmt.Println(c.Compress(data))
+}
+</code></pre>
+
+<h2>🛠 Builder Pattern</h2>
+<pre><code class="go">type UserBuilder struct {
+    u User
+}
+func (b *UserBuilder) Name(name string) *UserBuilder {
+    b.u.Name = name; return b
+}
+func (b *UserBuilder) Build() User { return b.u }
+</code></pre>
+
+<h2>🎁 Decorator Pattern</h2>
+<pre><code class="go">func LogWrap(fn func(string) string) func(string) string {
+    return func(s string) string {
+        fmt.Println("Start")
+        res := fn(s)
+        fmt.Println("Done")
+        return res
+    }
+}
+</code></pre>
+
+<h2>🧩 Functional Option Pattern</h2>
+<pre><code class="go">type Server struct {
+    Port int
+}
+type Option func(*Server)
+
+func WithPort(p int) Option {
+    return func(s *Server) { s.Port = p }
+}
+</code></pre>
+
+
+<h2>📌 Ứng dụng hệ thống</h2>
+<ul>
+  <li><strong>Factory</strong>: khởi tạo logger, db, gRPC client</li>
+  <li><strong>Strategy</strong>: auth engine, retry logic</li>
+  <li><strong>Functional Option</strong>: server config, middleware chain</li>
+</ul>
+
+
+
+<hr />
+<h1 id="23-system-design-worker-pool-fan-inout-pipeline">23. System Design: Worker Pool, Fan-in/out, Pipeline</h1>
+
+<h2>🧠 Tổng quan</h2>
+<ul>
+  <li>Go hỗ trợ xử lý song song qua goroutine và channel → dễ áp dụng các mô hình như pipeline, fan-out, worker pool.</li>
+</ul>
+
+<h2>🔁 Fan-out Pattern</h2>
+<pre><code class="go">jobs := make(chan int, 100)
+for w := 1; w <= 3; w++ {
+    go func(id int) {
+        for j := range jobs {
+            fmt.Println("Worker", id, "xử lý job", j)
+        }
+    }(w)
+}
+for j := 1; j <= 5; j++ {
+    jobs <- j
+}
+close(jobs)
+</code></pre>
+
+<h2>🔀 Fan-in Pattern</h2>
+<pre><code class="go">func merge(cs ...<-chan int) <-chan int {
+    out := make(chan int)
+    var wg sync.WaitGroup
+    for _, c := range cs {
+        wg.Add(1)
+        go func(ch <-chan int) {
+            defer wg.Done()
+            for v := range ch {
+                out <- v
+            }
+        }(c)
+    }
+    go func() {
+        wg.Wait()
+        close(out)
+    }()
+    return out
+}
+</code></pre>
+
+<h2>🛠 Worker Pool</h2>
+<pre><code class="go">jobs := make(chan int, 10)
+results := make(chan int, 10)
+
+worker := func(jobs <-chan int, results chan<- int) {
+    for j := range jobs {
+        results <- j * 2
+    }
+}
+for i := 0; i < 3; i++ {
+    go worker(jobs, results)
+}
+for j := 1; j <= 5; j++ {
+    jobs <- j
+}
+close(jobs)
+for i := 0; i < 5; i++ {
+    fmt.Println(<-results)
+}
+</code></pre>
+
+<h2>🔗 Pipeline Pattern</h2>
+<pre><code class="go">func gen(nums ...int) <-chan int {
+    out := make(chan int)
+    go func() {
+        for _, n := range nums {
+            out <- n
+        }
+        close(out)
+    }()
+    return out
+}
+
+func square(in <-chan int) <-chan int {
+    out := make(chan int)
+    go func() {
+        for n := range in {
+            out <- n * n
+        }
+        close(out)
+    }()
+    return out
+}
+</code></pre>
+
+<h2>📌 Ứng dụng thực tế</h2>
+<ul>
+  <li><strong>Fan-out</strong>: xử lý song song nhiều file/API/data chunk</li>
+  <li><strong>Fan-in</strong>: gom data từ nhiều nguồn về 1 xử lý</li>
+  <li><strong>Worker Pool</strong>: giới hạn tài nguyên hệ thống</li>
+  <li><strong>Pipeline</strong>: ETL, stream xử lý log, event</li>
+</ul>
+
+<hr />
+<h1 id="24-secure-coding-và-cicd-workflow">24. Secure Coding và CI/CD Workflow</h1>
+
+<h2>🧠 Mục tiêu bảo mật</h2>
+<ul>
+  <li>Bảo vệ dữ liệu người dùng và hệ thống backend khỏi lỗi bảo mật, lộ thông tin, config sai.</li>
+</ul>
+
+<h2>🔐 Best Practices</h2>
+<ul>
+  <li>Validate mọi input đầu vào</li>
+  <li>Không log token, password, internal error chi tiết</li>
+  <li>Dùng <code>context.WithTimeout</code> với DB/API</li>
+  <li>Không hardcode secret – dùng ENV hoặc secret vault</li>
+</ul>
+
+<h2>🛡️ Static Security Scan</h2>
+<pre><code class="bash">gosec ./...    # phát hiện eval, crypto yếu, bind-all, hardcoded token...
+</code></pre>
+
+<h2>🚀 CI/CD Workflow Best Practices</h2>
+<ul>
+  <li>Tích hợp go fmt, lint, test, security scan</li>
+  <li>Không log secret ra GitHub Actions</li>
+  <li>Dùng docker multi-stage → image gọn</li>
+</ul>
+
+<h2>📦 CI Example (GitHub Actions)</h2>
+<pre><code class="yaml">- run: go test -cover ./...
+- run: golangci-lint run
+- run: gosec ./...
+</code></pre>
+
+<h2>📌 Gợi ý hệ thống</h2>
+<ul>
+  <li>Luôn có timeout, tránh DDoS bằng chờ vô hạn</li>
+  <li>Scan code bảo mật mỗi merge request</li>
+  <li>Structured logging để trace behavior nguy hiểm</li>
+</ul>
+
+<hr />
+<h1 id="25-distributed-systems-redis-kafka-envoyproxy">25. Distributed Systems: Redis, Kafka, EnvoyProxy</h1>
+
+<h2>🧠 Kiến trúc phân tán – Redis / Kafka / Envoy</h2>
+<ul>
+  <li><strong>Redis</strong>: cache, pub/sub, distributed lock</li>
+  <li><strong>Kafka</strong>: event queue, pub/sub async microservice</li>
+  <li><strong>Envoy</strong>: service proxy, gRPC gateway, observability layer</li>
+</ul>
+
+<h2>🚀 Redis</h2>
+<pre><code>&lt;!-- Redis Caching Flow --&gt;
+Client → API → Redis Cache?
+           ↓ miss
+         → DB → Cache → Redis
+         ← Result
+</code></pre>
+
+<pre><code class="go">rdb := redis.NewClient(&redis.Options{Addr: "localhost:6379"})
+val, err := rdb.Get(ctx, "user:1").Result()
+if err == redis.Nil {
+    // cache miss → DB
+}
+</code></pre>
+
+<h2>📨 Kafka</h2>
+<pre><code>&lt;!-- Kafka Event Flow --&gt;
+Producer → Kafka topic: order.created
+                       ↓
+            Consumer A → Email
+            Consumer B → Billing
+</code></pre>
+
+<pre><code class="go">r := kafka.NewReader(kafka.ReaderConfig{Topic: "order.created"})
+for {
+    m, _ := r.ReadMessage(ctx)
+    fmt.Println(string(m.Value))
+}
+</code></pre>
+
+<h2>🌐 Envoy</h2>
+<pre><code>&lt;!-- Envoy Service Flow --&gt;
+Client → Envoy Proxy → gRPC Service
+            ↑ log, TLS, retry, metrics
+</code></pre>
+
+<pre><code class="yaml"># envoy.yaml
+grpc_services:
+  - google.api.http:
+      post: "/v1/send"
+      body: "*"
+    selector: messaging.SendMessage
+</code></pre>
+
+<h2>📌 Gợi ý hệ thống</h2>
+<ul>
+  <li><strong>Redis</strong>: tăng throughput, TTL, lock job</li>
+  <li><strong>Kafka</strong>: tách sync → async, log store, broadcast</li>
+  <li><strong>Envoy</strong>: observability, retry, circuit breaker</li>
+</ul>
+<h2>🧠 Mở rộng: Chi tiết Redis / Kafka / EnvoyProxy</h2>
+
+<h3>🔴 Redis – Những chức năng mạnh mẽ</h3>
+<ul>
+  <li><strong>GET / SET</strong>: lưu dữ liệu dạng key-value cực nhanh</li>
+  <li><strong>TTL / EXPIRE</strong>: key tự xoá sau một thời gian</li>
+  <li><strong>INCR / DECR</strong>: đếm truy cập, lượt vote</li>
+  <li><strong>Pub/Sub</strong>: push real-time event (chat, notify)</li>
+  <li><strong>ZSET</strong>: sort theo score – dùng cho ranking/leaderboard</li>
+  <li><strong>Stream</strong>: giống Kafka nhẹ, hỗ trợ nhóm, backlog</li>
+  <li><strong>Distributed Lock</strong>: SETNX + EXPIRE giúp lock an toàn</li>
+</ul>
+
+<h3>🔶 Kafka – Các thành phần cốt lõi</h3>
+<ul>
+  <li><strong>Topic</strong>: nơi các producer ghi và consumer đọc</li>
+  <li><strong>Partition</strong>: giúp scale, đảm bảo thứ tự trong partition</li>
+  <li><strong>Consumer Group</strong>: chia tải – mỗi partition → 1 consumer trong group</li>
+  <li><strong>Offset</strong>: vị trí message trong partition</li>
+  <li><strong>Payload</strong>: nội dung message, dạng []byte → thường là JSON, Protobuf</li>
+  <li><strong>Retention</strong>: lưu message nhiều giờ/ngày để replay</li>
+</ul>
+
+<h3>📌 Kafka Patterns</h3>
+<ul>
+  <li><strong>Fan-out</strong>: 1 event → nhiều service xử lý song song</li>
+  <li><strong>Retry Queue</strong>: gửi lại nếu consumer fail</li>
+  <li><strong>Compaction</strong>: chỉ giữ bản mới nhất theo key</li>
+</ul>
+
+<h3>🔵 Envoy – Khả năng mạnh</h3>
+<ul>
+  <li><strong>gRPC transcoding</strong>: REST → gRPC → handler</li>
+  <li><strong>Per-route policy</strong>: config riêng từng endpoint</li>
+  <li><strong>Rate limit</strong>: chặn lạm dụng theo header/client IP</li>
+  <li><strong>Retry & Circuit breaker</strong>: đảm bảo resiliency khi backend fail</li>
+  <li><strong>RBAC / AuthZ</strong>: chặn/cho phép request theo role, path, header</li>
+  <li><strong>Access log</strong>: JSON log cho mọi request</li>
+  <li><strong>Tracing</strong>: tích hợp Zipkin/Jaeger</li>
+</ul>
+
+
 </main>
+<div class="sidebar-image">
+  <img src="Golang.png" alt="System Overview" />
+</div>
   <script src="main.js"></script>
 </body>
 </html>
