@@ -57,12 +57,13 @@ nav a:hover {
 nav a.active {
     font-weight: bold;
     color: #d35400;
-}
+}/* Desktop view */
 .sidebar-image {
-    position: fixed;
-    right: 100px;
-    top: 10px;
-    width: 900px; /* tăng kích thước */
+    position: relative;
+    width: 100%;
+    max-width: 900px;
+    margin: 40px auto;
+    text-align: center;
     z-index: 0;
   }
   
@@ -71,4 +72,17 @@ nav a.active {
     height: auto;
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  }
+  
+  /* Responsive fix: Hide or shrink image on mobile */
+  @media (max-width: 768px) {
+    .sidebar-image {
+      max-width: 100%;
+      padding: 0 12px;
+    }
+  
+    .sidebar-image img {
+      max-width: 100%;
+      height: auto;
+    }
   }
