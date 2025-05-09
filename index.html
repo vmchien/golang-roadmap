@@ -49,6 +49,31 @@
       <li><a href="#25-distributed-systems-redis-kafka-envoyproxy">25. Distributed Systems: Redis, Kafka, EnvoyProxy</a></li>
     </ul>
   </li>
+  <li><strong>Phần IV – Những sai lầm trong Go (Go Mistakes)</strong>
+    <ul>
+      <li><a href="#mistake-1-interface-vs-nil">Mistake #1 – So sánh interface với nil</a></li>
+      <li><a href="#mistake-2-closure-trong-vòng-lặp">Mistake #2 – Closure trong vòng lặp</a></li>
+      <li><a href="#mistake-3-defer-trong-vòng-lặp">Mistake #3 – Dùng defer trong vòng lặp</a></li>
+      <li><a href="#mistake-4-truy-cập-map-từ-nhiều-goroutine">Mistake #4 – Truy cập map từ nhiều goroutine</a></li>
+      <li><a href="#mistake-5-goroutine-leak-không-listen-channel">Mistake #5 – Goroutine leak vì không listen channel</a></li>
+      <li><a href="#mistake-6-truyền-slice-mà-tưởng-rằng-copy">Mistake #6 – Truyền slice mà tưởng rằng copy</a></li>
+      <li><a href="#mistake-7-dùng-value-receiver-khi-cần-pointer">Mistake #7 – Dùng value receiver khi cần pointer</a></li>
+      <li><a href="#mistake-8-context-không-bị-cancel">Mistake #8 – Không cancel context → goroutine leak</a></li>
+      <li><a href="#mistake-9-panic-không-được-recover">Mistake #9 – Panic không được recover đúng cách</a></li>
+      <li><a href="#mistake-10-type-assertion-không-check-ok">Mistake #10 – Type assertion không check ok</a></li>
+      <li><a href="#mistake-11-slice-capacity-bị-giữ-ngầm">Mistake #11 – Slice giữ capacity ngầm gây memory leak</a></li>
+      <li><a href="#mistake-12-ghi-map-ẩn-trong-json">Mistake #12 – Map khi marshal JSON có thứ tự không xác định</a></li>
+      <li><a href="#mistake-13-defer-có-thứ-tự-lifo">Mistake #13 – Nhầm lẫn thứ tự thực thi defer (LIFO)</a></li>
+      <li><a href="#mistake-14-buffered-channel-vẫn-deadlock">Mistake #14 – Buffered channel vẫn có thể gây deadlock</a></li>
+      <li><a href="#mistake-15-pointer-trên-loop-variable">Mistake #15 – Trỏ tới biến vòng lặp → tất cả trỏ cùng địa chỉ</a></li>
+      <li><a href="#mistake-16-lỗi-fmtprintf-sai-kiểu">Mistake #16 – fmt.Printf dùng sai format type</a></li>
+      <li><a href="#mistake-17-struct-tag-không-được-parser">Mistake #17 – Struct tag bị lỗi vì không đúng format</a></li>
+      <li><a href="#mistake-18-sync-waitgroup-dùng-thiếu-done">Mistake #18 – WaitGroup không gọi Done → block mãi mãi</a></li>
+      <li><a href="#mistake-19-không-wrap-error-gốc">Mistake #19 – Không wrap error → mất ngữ cảnh khi debug</a></li>
+      <li><a href="#mistake-20-shadow-biến-làm-hiểu-nhầm-logic">Mistake #20 – Biến bị shadow trong block → bug khó phát hiện</a></li>
+    </ul>
+  </li>
+  
 </ul>
 
   </nav>
@@ -218,6 +243,52 @@ Kiểu dữ liệu UTF-8 bất biến</p></li>
 - Phân biệt khi truyền dữ liệu qua hàm: array (copy toàn bộ) vs slice (chia sẻ vùng nhớ)</p>
 
 
+<h2>🎯 Câu hỏi phỏng vấn (Core + Senior)</h2>
+<ul>
+  <li>
+    <strong>Câu hỏi:</strong> Sự khác nhau giữa <code>array</code> và <code>slice</code> trong Go là gì?
+    <pre><code><strong>array</strong>: có độ dài cố định, là giá trị (value type), khi truyền vào hàm sẽ được copy.
+<strong>slice</strong>: là cấu trúc động gồm con trỏ, độ dài và capacity – khi truyền vào là tham chiếu đến mảng gốc.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> <code>rune</code> và <code>byte</code> khác nhau như thế nào?
+    <pre><code><strong>byte</strong> là alias của uint8, dùng cho dữ liệu nhị phân/ASCII.
+<strong>rune</strong> là alias của int32, đại diện ký tự Unicode – dùng cho xử lý tiếng Việt, emoji.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> <code>const</code> khác gì với <code>var</code>?
+    <pre><code><strong>const</strong>: hằng số, được tính ở compile-time, không chiếm bộ nhớ runtime.
+<strong>var</strong>: là biến – có thể thay đổi trong runtime.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Có nên dùng <code>float64</code> để lưu tiền không?
+    <pre><code>Không nên – vì float dễ gây lỗi làm tròn. Hãy dùng kiểu số nguyên hoặc thư viện như <code>shopspring/decimal</code>.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Khi nào nên dùng <code>:=</code> và khi nào dùng <code>var</code>?
+    <pre><code><strong>:=</strong>: dùng nhanh trong hàm, khi không cần khai báo rõ kiểu.
+<strong>var</strong>: nên dùng ở ngoài hàm, export, hoặc khi cần kiểu cụ thể / zero value chính xác.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> <code>string</code> trong Go có mutable không?
+    <pre><code>Không. String trong Go là immutable – mọi thay đổi tạo chuỗi mới → ảnh hưởng hiệu suất nếu xử lý nhiều.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Vì sao <code>slice</code> được dùng nhiều thay vì array?
+    <pre><code>Slice linh hoạt, nhẹ, truyền qua hàm không copy dữ liệu – đồng thời có thể mở rộng, cắt, clone dễ dàng.</code></pre>
+  </li>
+</ul>
+
+
+
+
+
   
 <hr />
 <h1 id="2-cấu-trúc-điều-kiện-và-vòng-lặp">2. Cấu trúc điều kiện và vòng lặp</h1>
@@ -296,6 +367,39 @@ for idx, val := range nums {
   <li>Go khuyến khích viết code đơn giản: <code>switch</code> thay vì nhiều <code>if</code> lồng nhau.</li>
   <li><code>range</code> rất mạnh với slice, map, channel — hỗ trợ clean code khi lặp.</li>
 </ul>
+<h2>🎯 Câu hỏi phỏng vấn (Core + Senior)</h2>
+<ul>
+  <li>
+    <strong>Câu hỏi:</strong> Go không có <code>while</code> hay <code>do-while</code> vì sao?
+    <pre><code>Triết lý ngôn ngữ: đơn giản. <code>for</code> đủ dùng cho tất cả – giúp code ngắn, tránh lỗi logic lặp.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Dùng <code>range</code> với <code>slice</code> có rủi ro gì?
+    <pre><code>Phần tử lấy ra là bản sao – nếu lấy địa chỉ (&v), tất cả trỏ cùng 1 vùng nhớ → bug khi dùng trong loop pointer.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> <code>range map</code> có thứ tự không?
+    <pre><code>Không. Từ Go 1.12+, range map được xáo trộn ngẫu nhiên để tránh việc phụ thuộc vào thứ tự.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Khi nào dùng <code>switch</code> thay vì <code>if</code>?
+    <pre><code>Khi có nhiều nhánh kiểm tra giá trị cụ thể. <code>switch</code> rõ ràng, ngắn gọn, không cần break, hỗ trợ fallthrough.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Cách viết vòng lặp vô hạn an toàn trong Go?
+    <pre><code>Viết <code>for {}</code>, kết hợp với <code>select</code> + <code>ctx.Done()</code> để cho phép graceful shutdown.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Có nên dùng <code>for i := 0; i &lt; len(slice); i++</code> thay <code>range</code>?
+    <pre><code>Có – nếu muốn truy cập và thay đổi chính xác phần tử gốc.
+<code>range</code> copy giá trị nên không thay đổi được gốc với kiểu không phải con trỏ.</code></pre>
+  </li>
+</ul>
 
 
 <hr />
@@ -371,6 +475,47 @@ fmt.Println(sum(nums...)) // cần dấu ...
   <li>Go không hỗ trợ default parameter — variadic function kết hợp với pattern giúp lấp chỗ trống này.</li>
 </ul>
 
+<h2>🎯 Câu hỏi phỏng vấn (Core + Senior)</h2>
+<ul>
+  <li>
+    <strong>Câu hỏi:</strong> Go có hỗ trợ <code>function as first-class citizen</code> không?
+    <pre><code>Có. Hàm trong Go có thể gán vào biến, truyền vào hàm khác, trả về từ hàm → hỗ trợ lập trình hàm (functional).</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Closure là gì? Khi nào biến trong closure escape lên heap?
+    <pre><code>Closure là hàm "nhớ" được giá trị biến ngoài scope. Nếu closure giữ biến sau khi hàm cha kết thúc → biến đó sẽ escape lên heap.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Có thể khai báo hàm bên trong hàm không? Khi nào nên dùng?
+    <pre><code>Có. Thường dùng để đóng gói logic phụ chỉ phục vụ hàm chính, giúp tách biệt và rõ ràng.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Ưu nhược điểm của <code>variadic function</code> trong Go?
+    <pre><code>Ưu: truyền số lượng đối số linh hoạt, dùng như slice.
+Nhược: khó enforce type cho từng phần tử, dễ gây lỗi khi truyền nhầm kiểu.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Có thể truyền <code>slice</code> vào hàm variadic không?
+    <pre><code>Có. Phải thêm <code>...</code> sau slice để "giải nén" các phần tử → <code>sum(nums...)</code></code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Hàm trả về hàm có ứng dụng gì trong thực tế?
+    <pre><code>Dùng để tạo factory, builder, middleware, hoặc gắn logic theo context (e.g: prefixer, logWithLevel...)</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> So sánh <code>defer</code> vs <code>return</code> trong hàm → thứ tự thực thi?
+    <pre><code><code>defer</code> luôn chạy sau khi <code>return</code> được chuẩn bị nhưng trước khi rời khỏi hàm.
+Nếu có multiple <code>defer</code> → thứ tự chạy LIFO (stack).</code></pre>
+  </li>
+</ul>
+
+
 <hr />
 <h1 id="4-slice-map-array-và-type-casting">4. Slice, Map, Array và Type Casting</h1>
 
@@ -408,6 +553,60 @@ m["x"] = 100
 var f float64 = 3.99
 i := int(f) // ép kiểu rõ ràng
 </code></pre>
+
+<h2>🎯 Câu hỏi phỏng vấn (Core + Senior)</h2>
+<ul>
+  <li>
+    <strong>Câu hỏi:</strong> Sự khác biệt giữa <code>slice</code> và <code>array</code> là gì?
+    <pre><code><strong>Slice</strong>: là reference type, gồm pointer + len + cap,
+trỏ vào underlying array, thay đổi phần tử sẽ ảnh hưởng dữ liệu gốc.
+
+<strong>Array</strong>: là value type, khi gán hoặc truyền vào hàm sẽ bị copy toàn bộ.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Tại sao <code>map</code> cần dùng <code>make()</code> trước khi gán?
+    <pre><code>Vì <code>map</code> là reference type chưa được khởi tạo,
+nếu chưa dùng <code>make()</code> thì việc gán phần tử sẽ gây panic.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Gán <code>slice1 := slice2</code> có phải copy dữ liệu không?
+    <pre><code>Không – chỉ copy struct slice (pointer + len + cap).
+
+Cả hai biến vẫn trỏ đến cùng 1 underlying array → thay đổi dữ liệu sẽ ảnh hưởng lẫn nhau.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Làm sao để clone slice mà không ảnh hưởng slice gốc?
+    <pre><code>Dùng <code>copy()</code>:
+clone := make([]int, len(src))
+copy(clone, src)</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Có thể ép kiểu ngầm trong Go không?
+    <pre><code>Không – Go yêu cầu explicit casting.
+
+Phải ép kiểu rõ ràng: <code>int(f)</code>, <code>float64(i)</code>...</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Map có được dùng trong nhiều goroutine không?
+    <pre><code>Không – map không thread-safe.
+
+Dùng map trong nhiều goroutine cần bảo vệ bằng <code>sync.Mutex</code>
+hoặc thay thế bằng <code>sync.Map</code>.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Gán <code>map1 := map2</code> thì có độc lập không?
+    <pre><code>Không – cả hai cùng trỏ đến cùng vùng nhớ underlying.
+
+Thay đổi trên một map sẽ ảnh hưởng map còn lại.</code></pre>
+  </li>
+</ul>
+
 
 <hr />
 <h1 id="5-struct-method-và-embedded-struct">5. Struct, Method và Embedded Struct</h1>
@@ -448,6 +647,63 @@ type Admin struct {
 }
 </code></pre>
 
+<h2>🎯 Câu hỏi phỏng vấn (Core + Senior)</h2>
+<ul>
+  <li>
+    <strong>Câu hỏi:</strong> Khác biệt giữa value receiver và pointer receiver?
+    <pre><code><strong>Value receiver</strong>: nhận bản sao → không thay đổi giá trị gốc.
+
+<strong>Pointer receiver</strong>: thao tác trực tiếp trên vùng nhớ gốc → thay đổi được struct.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Có nên mix cả pointer và value receiver trong cùng struct?
+    <pre><code>Không nên – dù Go cho phép, nhưng dễ gây rối logic.
+
+Nên thống nhất: nếu có method dùng pointer → toàn bộ struct nên dùng pointer receiver.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Embedded struct khác gì inheritance trong OOP?
+    <pre><code>Embedded struct là composition – không phải kế thừa thực sự.
+
+Không có override, không gọi được <code>super()</code>, nhưng cho phép reuse field và method.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Có thể override method từ embedded struct không?
+    <pre><code>Không. Nếu định nghĩa method trùng tên → sẽ shadow method của embedded struct.
+
+Không có cơ chế override thực sự như trong Java hay C++.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Sắp xếp field trong struct ảnh hưởng gì?
+    <pre><code>Ảnh hưởng đến memory padding.
+
+Nếu sắp không hợp lý → bị thừa padding → struct tốn bộ nhớ hơn.
+
+Nên sắp theo thứ tự giảm dần kích thước: int64 → int32 → bool → int8...</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Có thể gán method cho kiểu alias không?
+    <pre><code>Chỉ gán được method cho custom type, không phải alias trực tiếp của built-in.
+
+Ví dụ: <code>type MyInt int</code> → được. Nhưng <code>type MyInt = int</code> → không được.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Có thể dùng struct anonymous trong Go không?
+    <pre><code>Có – dùng trong phạm vi hàm như:
+
+tmp := struct {
+  Name string
+  Age  int
+}{Name: "A", Age: 20}</code></pre>
+  </li>
+</ul>
+
 <hr />
 <h1 id="6-interface-và-type-assertion">6. Interface và Type Assertion</h1>
 
@@ -485,6 +741,63 @@ func inspect(i interface{}) {
     }
 }
 </code></pre>
+<h2>🎯 Câu hỏi phỏng vấn (Core + Senior)</h2>
+<ul>
+  <li>
+    <strong>Câu hỏi:</strong> Interface trong Go lưu trữ những gì?
+    <pre><code>Interface lưu 2 phần:
+- type (loại thực tế)
+- value (giá trị thực tế)
+
+Đây là lý do interface có thể giữ mọi giá trị – kể cả pointer hay nil.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Sự khác biệt giữa <code>interface{} == nil</code> và <code>val == nil</code> là gì?
+    <pre><code><code>interface{} == nil</code> chỉ true nếu cả type và value đều nil.
+
+Nhưng nếu interface chứa type non-nil (vd: *MyStruct) nhưng value là nil,
+→ vẫn khác nil → dễ gây bug.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Khi nào nên dùng <code>interface{}</code> trong hệ thống?
+    <pre><code>Chỉ dùng khi cần generic hóa: log, JSON marshal, middleware...
+
+Không nên dùng ở business logic vì mất type safety, dễ gây lỗi runtime.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> <code>type assertion</code> có an toàn không? So với <code>type switch</code>?
+    <pre><code><code>val.(T)</code> sẽ panic nếu sai kiểu.
+
+Dùng <code>val, ok := val.(T)</code> để tránh panic.
+
+<code>type switch</code> an toàn hơn khi kiểm tra nhiều kiểu – nên ưu tiên trong handler.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Interface có thể implement method pointer và value khác nhau không?
+    <pre><code>Có. Nếu method có pointer receiver → chỉ pointer mới implement được.
+
+Nếu method có value receiver → cả value và pointer đều dùng được.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Interface có tốn bộ nhớ hơn struct không?
+    <pre><code>Có – vì interface lưu thêm metadata (type + value).
+
+Ngoài ra, nếu interface chứa giá trị escape heap → tăng áp lực GC.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Làm sao kiểm tra runtime 1 biến có implement interface hay không?
+    <pre><code>Dùng <code>_, ok := val.(TargetInterface)</code> để kiểm tra nhanh.
+
+Nếu cần kiểm tra sâu hơn → dùng <code>reflect.TypeOf(val).Implements()</code>.</code></pre>
+  </li>
+</ul>
+
 
 <hr />
 <h1 id="7-module-package-và-go-mod">7. Module, Package và go mod</h1>
@@ -520,6 +833,62 @@ myapp/
 ├── util/
 │   └── math.go  (package util)
 </code></pre>
+
+<h2>🎯 Câu hỏi phỏng vấn (Core + Senior)</h2>
+<ul>
+  <li>
+    <strong>Câu hỏi:</strong> Sự khác nhau giữa <code>package</code> và <code>module</code> trong Go là gì?
+    <pre><code><strong>Package</strong>: là đơn vị tổ chức code nhỏ nhất – mỗi thư mục là một package.
+
+<strong>Module</strong>: là tập hợp nhiều package, được quản lý qua <code>go.mod</code> – cho phép khai báo version, dependency.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Một project Go có thể chứa nhiều module được không?
+    <pre><code>Có – nhưng không nên trừ khi bạn cần tách version độc lập.
+
+Thường mỗi repo chỉ nên có 1 module để đơn giản hoá quản lý dependency và CI/CD.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> <code>go mod tidy</code> khác gì <code>go get</code>?
+    <pre><code><code>go mod tidy</code>: tự động dọn dẹp dependency không dùng, thêm cái còn thiếu.
+
+<code>go get</code>: thêm hoặc cập nhật module theo version cụ thể (Go < 1.17).</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Làm sao để import local package trong cùng module?
+    <pre><code>Import theo tên logic trong <code>go.mod</code>:
+
+Ví dụ: nếu go.mod là <code>module github.com/abc/app</code>,
+thì file ở thư mục <code>utils/log</code> sẽ được import là:
+<code>import "github.com/abc/app/utils/log"</code></code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Điều gì xảy ra khi bạn đổi tên module trong <code>go.mod</code>?
+    <pre><code>Tất cả các import path theo module đó cần được cập nhật tương ứng.
+
+Nếu không sẽ gây lỗi compile hoặc mismatch module path.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Có thể dùng 2 version khác nhau của cùng 1 module trong go mod không?
+    <pre><code>Không – Go không hỗ trợ multiple version cho cùng một module trong cùng thời điểm build.
+
+Go sẽ chọn version cao nhất thoả dependency graph.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> <code>replace</code> directive trong <code>go.mod</code> dùng để làm gì?
+    <pre><code>Dùng để thay đổi source module khi build.
+
+Ví dụ: dùng local path hoặc fork thay vì module chính thức:
+<code>replace github.com/lib/original => ../lib/fork</code></code></pre>
+  </li>
+</ul>
+
 
 
 <hr />
@@ -665,6 +1034,118 @@ func main() {
 }
 </code></pre>
 
+<h2>🎯 Câu hỏi phỏng vấn (Core + Senior)</h2>
+<ul>
+  <li>
+    <strong>Câu hỏi:</strong> Khi nào goroutine bị leak? Làm sao phát hiện?
+    <pre><code>Goroutine bị leak khi:
+- Nó block mãi mãi (thường do chờ channel không ai gửi),
+- Hoặc context đã bị huỷ nhưng goroutine không kiểm tra <code>ctx.Done()</code>.
+
+Phát hiện bằng: <code>runtime.NumGoroutine()</code>, <code>pprof</code>, hoặc log traceID không thoát.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> So sánh <code>buffered</code> vs <code>unbuffered channel</code>. Dùng sai gây gì?
+    <pre><code><strong>Unbuffered</strong>: sender và receiver phải gặp nhau mới unblock → dễ deadlock nếu lệch.
+
+<strong>Buffered</strong>: sender có thể gửi trước, nhưng vẫn block nếu đầy → dùng sai vẫn có thể block!
+
+Cần hiểu kỹ luồng đi và thời điểm <code>close()</code> channel.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Điều gì xảy ra nếu đọc từ một channel đã bị close?
+    <pre><code>Go không panic – giá trị zero sẽ được trả về, và biến <code>ok</code> sẽ là false.
+
+<code>val, ok := <-ch</code> → ok = false nếu channel đã close.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Tại sao không nên close channel ở bên nhận?
+    <pre><code>Vì channel chỉ nên được <strong>close từ phía gửi</strong>.
+
+Close từ phía nhận dễ gây panic nếu bên gửi vẫn đang hoạt động.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Có nên dùng channel thay Mutex không?
+    <pre><code>Có thể – nhưng chỉ khi mô hình là producer-consumer rõ ràng.
+
+Nếu logic là update dữ liệu shared ngẫu nhiên → dùng Mutex an toàn hơn.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Race condition khi dùng channel có thể xảy ra không?
+    <pre><code>Có – ví dụ:
+- Ghi channel từ nhiều goroutine cùng lúc
+- Đọc/ghi cùng lúc khi không rõ control
+- Đóng channel nhiều nơi
+
+Channel là công cụ đồng bộ, nhưng <strong>không loại bỏ hết race nếu sai mô hình.</strong></code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Goroutine thực chất chạy trên gì? GMP model là gì?
+    <pre><code>Goroutine không phải thread – nó chạy trên GMP model:
+
+- G: goroutine (tác vụ logic)
+- M: OS thread
+- P: processor (bộ lên lịch)
+
+Go runtime ánh xạ G → M thông qua P, giúp hàng ngàn goroutine chia đều thread hiệu quả.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Nếu <code>main()</code> kết thúc trước khi goroutine hoàn thành thì sao?
+    <pre><code>Toàn bộ chương trình sẽ <strong>exit ngay lập tức</strong> – không chờ goroutine chạy xong.
+
+Giải pháp: dùng <code>sync.WaitGroup</code>, <code>chan</code>, hoặc <code>context</code> để đảm bảo chờ.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Select trên nhiều channel có ưu điểm gì?
+    <pre><code>Giúp chọn channel sẵn sàng – tránh block đơn luồng.
+
+Có thể dùng <code>select + default</code> để làm non-blocking receive/send.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Có thể gửi vào <code>nil channel</code> không?
+    <pre><code>Không – sẽ block mãi mãi.
+
+Nil channel dùng để vô hiệu hóa select-case theo logic runtime, nhưng phải kiểm soát cực kỹ.</code></pre>
+  </li>
+</ul>
+
+<li>
+  <strong>Câu hỏi:</strong> Các loại channel trong Go là gì? Dùng khi nào?
+  <pre><code>Có 3 loại channel:
+
+🔹 <strong>Unbuffered channel</strong>: đồng bộ – gửi và nhận phải xảy ra đồng thời.
+→ Dùng khi cần block cho đến khi có goroutine đối ứng → đảm bảo đồng bộ chặt.
+
+🔹 <strong>Buffered channel</strong>: không block ngay – cho phép gửi trước, nhận sau.
+→ Dùng cho worker pool, pipeline, hoặc khi tốc độ gửi/nhận lệch nhau.
+
+🔹 <strong>Nil channel</strong>: không gửi/nhận được gì – luôn block.
+→ Dùng để vô hiệu hoá logic trong select-case (như enable/disable dynamic).</code></pre>
+</li>
+
+<li>
+  <strong>Câu hỏi:</strong> Khi nào nên dùng buffered channel thay vì unbuffered?
+  <pre><code>Khi muốn tăng throughput và không cần đồng bộ từng lệnh gửi/nhận.
+
+Ví dụ: xử lý log, job queue, worker pool – buffered giúp tránh block nếu consumer chậm.</code></pre>
+</li>
+
+<li>
+  <strong>Câu hỏi:</strong> Có nên dùng channel để thay thế cho mọi loại đồng bộ không?
+  <pre><code>Không. Channel phù hợp với mô hình <strong>truyền dữ liệu</strong> (communication by sharing).
+
+Nếu chỉ cần <strong>đồng bộ hoá truy cập shared state</strong> → dùng <code>sync.Mutex</code> sẽ đơn giản và hiệu quả hơn.</code></pre>
+</li>
+
 
 <hr />
 <h1 id="9-đồng-bộ-hoá-với-mutex-rwmutex-waitgroup">9. Đồng bộ hoá với Mutex, RWMutex, WaitGroup</h1>
@@ -739,6 +1220,99 @@ func main() {
   <li><strong>RWMutex</strong>: tối ưu hoá hiệu suất khi số lượng đọc nhiều gấp nhiều lần ghi.</li>
   <li><strong>WaitGroup</strong>: thay thế cho sleep/wait thủ công, cực kỳ hiệu quả trong batch job, worker pool, async task.</li>
   <li><strong>Tips:</strong> Luôn unlock bằng <code>defer</code>, tránh quên và gây block toàn chương trình.</li>
+</ul>
+
+<h2>🎯 Câu hỏi phỏng vấn (Core + Senior)</h2>
+<ul>
+  <li>
+    <strong>Câu hỏi:</strong> Mutex trong Go hoạt động như thế nào? Có thể gây deadlock không?
+    <pre><code>Mutex là primitive đảm bảo chỉ một goroutine được truy cập vùng dữ liệu tại một thời điểm.
+
+Có – nếu lock không được unlock, hoặc lock nhiều chiều (A → B và B → A) → sẽ gây deadlock.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Khác biệt giữa <code>sync.Mutex</code> và <code>sync.RWMutex</code>?
+    <pre><code><strong>Mutex</strong>: chỉ 1 goroutine được lock → tất cả block.
+
+<strong>RWMutex</strong>:
+- Nhiều goroutine được <code>RLock</code> cùng lúc (read concurrency).
+- Chỉ 1 goroutine được <code>Lock</code> (write) – block toàn bộ đọc & ghi khác.
+
+→ RWMutex hiệu quả khi tỉ lệ đọc >> ghi.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Có nên lồng nhiều mutex không? Làm sao tránh deadlock?
+    <pre><code>Không nên – nhưng nếu cần, phải đảm bảo <strong>thứ tự lock đồng nhất</strong> trên toàn hệ thống.
+
+Ví dụ:
+- Thread A lock(m1) → lock(m2)
+- Thread B cũng phải theo thứ tự đó – nếu đảo chiều sẽ deadlock.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Khi nào dùng WaitGroup? So với channel thì sao?
+    <pre><code><strong>WaitGroup</strong>: dùng để đợi tất cả goroutine hoàn tất.
+
+→ Dễ dùng trong job batching, đồng bộ nhiều tác vụ song song.
+
+<strong>Channel</strong>: linh hoạt hơn – truyền dữ liệu, có thể kết hợp với select/context.
+WaitGroup không truyền dữ liệu, chỉ dùng để <strong>đợi</strong>.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Gọi <code>wg.Done()</code> nhiều hơn hoặc ít hơn <code>wg.Add()</code> có sao không?
+    <pre><code>Có – nếu Done > Add → panic.
+
+Nếu thiếu Done → Wait sẽ block mãi mãi.
+
+Phải đảm bảo mỗi goroutine gọi Done đúng 1 lần → thường dùng defer wg.Done().</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Làm sao để kiểm soát race khi cập nhật counter toàn cục?
+    <pre><code>Dùng:
+- <code>sync.Mutex</code> hoặc <code>sync/atomic</code> để bảo vệ biến toàn cục.
+- Hoặc gom counter per-goroutine rồi tổng hợp sau → tránh contention.
+
+Không dùng biến toàn cục trực tiếp nếu nhiều goroutine cùng ghi.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Có cần unlock nếu panic xảy ra sau Lock() không?
+    <pre><code>Có – nếu không unlock, các goroutine sau sẽ bị block mãi mãi.
+
+Luôn <strong>dùng <code>defer mu.Unlock()</code></strong> ngay sau khi lock để tránh quên – best practice bắt buộc.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Mutex có ảnh hưởng gì tới performance? Tối ưu thế nào?
+    <pre><code>Mutex gây block → nếu contention cao sẽ giảm throughput.
+
+Tối ưu:
+- Chỉ lock vùng critical – tránh lock bao toàn hàm.
+- Dùng RWMutex nếu chủ yếu là đọc.
+- Dùng channel hoặc sharding nếu muốn scale-out.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> So sánh <code>sync.Mutex</code> với <code>sync/atomic</code> – khi nào dùng gì?
+    <pre><code><strong>sync/atomic</strong>: cực nhanh, không block → dùng khi thao tác đơn giản (int, flag).
+
+<strong>Mutex</strong>: dùng cho nhiều biến, logic phức tạp hoặc cần lock nhóm thao tác.
+
+Atomic không thay thế mutex trong mọi tình huống – dễ viết sai nếu không cẩn thận.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Cách test deadlock hoặc race trong code đồng bộ?
+    <pre><code>✔️ Dùng <code>go run -race</code> → phát hiện data race.
+
+✔️ Dùng <code>pprof</code> để xem goroutine blocking.
+
+✔️ Viết test cố tình tạo contention để verify logic đồng bộ.</code></pre>
+  </li>
 </ul>
 
 
@@ -854,6 +1428,81 @@ func main() {
 </ul>
 
 
+<h2>🎯 Câu hỏi phỏng vấn (Core + Senior)</h2>
+<ul>
+  <li>
+    <strong>Câu hỏi:</strong> Context trong Go được thiết kế để giải quyết vấn đề gì?
+    <pre><code>Quản lý vòng đời của tác vụ – truyền timeout, deadline, cancel signal xuyên suốt hệ thống (từ HTTP → DB → goroutine...).
+
+Giúp dừng task đúng lúc, tránh leak tài nguyên và hỗ trợ trace/log.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Sự khác nhau giữa <code>context.Background()</code> và <code>context.TODO()</code>?
+    <pre><code><code>Background()</code>: gốc, nên dùng cho main, init, hoặc test – không bao giờ bị cancel.
+
+<code>TODO()</code>: placeholder – dùng tạm khi chưa xác định được context cha.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> So sánh <code>WithCancel</code>, <code>WithTimeout</code>, và <code>WithDeadline</code>
+    <pre><code>- <code>WithCancel()</code>: tạo context có thể huỷ tay bằng hàm <code>cancel()</code>
+- <code>WithTimeout()</code>: huỷ sau khoảng thời gian xác định
+- <code>WithDeadline()</code>: huỷ tại thời điểm cố định (absolute time)
+
+Tất cả đều kế thừa từ context cha → huỷ truyền theo cha.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Khi nào context bị cancel?
+    <pre><code>1. Khi <code>cancel()</code> được gọi thủ công
+2. Khi timeout hết hạn hoặc tới deadline
+3. Khi context cha bị cancel → lan xuống context con</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Dữ liệu truyền qua context nên chứa gì?
+    <pre><code>Chỉ truyền metadata nhẹ: request ID, user ID, trace ID, lang…
+
+Không truyền dữ liệu lớn, pointer phức tạp hoặc logic xử lý → context là control signal, không phải data bus.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Điều gì xảy ra nếu không gọi <code>cancel()</code>?
+    <pre><code>Leak tài nguyên – context không bị huỷ, goroutine phụ thuộc vào nó sẽ không dừng.
+
+→ luôn dùng <code>defer cancel()</code> sau <code>context.With*</code> để đảm bảo cleanup.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Context giúp xử lý graceful shutdown như thế nào?
+    <pre><code>1. Bắt tín hiệu OS (SIGINT/SIGTERM)
+2. Gọi <code>cancel()</code> hoặc huỷ context gốc
+3. Các goroutine đang chạy kiểm tra <code>ctx.Done()</code> và thoát
+4. Đợi bằng WaitGroup → đảm bảo đóng hoàn toàn trước khi exit</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Có nên truyền context qua global biến?
+    <pre><code>Không – context nên được truyền qua function parameter để rõ ràng và tránh shared mutable state.
+
+→ Giúp dễ trace, test, và tránh bug khi chạy đồng thời.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Gọi DB/API mà không truyền context có hậu quả gì?
+    <pre><code>Không thể dừng đúng lúc nếu request bị huỷ (timeout/cancel) → gây leak connection, timeout trễ, tắc pool.
+
+→ luôn dùng <code>db.QueryContext(ctx, ...)</code>, <code>http.NewRequestWithContext</code>.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Có bao giờ nên <code>cancel()</code> context nhiều lần không?
+    <pre><code>Không – chỉ cancel một lần duy nhất. Cancel nhiều không lỗi nhưng thừa logic → nên tách rõ chủ sở hữu context.</code></pre>
+  </li>
+</ul>
+
+
 <hr />
 <h1 id="11-error-handling-và-panicrecover">11. Error Handling và Panic/Recover</h1>
 
@@ -957,6 +1606,97 @@ func runJob(ctx context.Context) {
   <li><strong>Graceful shutdown</strong>: bắt buộc ở service production — tránh mất dữ liệu, close connection đúng cách.</li>
 </ul>
 
+<h2>🎯 Câu hỏi phỏng vấn (Core + Senior)</h2>
+<ul>
+  <li>
+    <strong>Câu hỏi:</strong> Vì sao Go không dùng try-catch như các ngôn ngữ khác?
+    <pre><code>Triết lý của Go: lỗi là dữ liệu – cần xử lý tường minh bằng return.
+
+→ Giúp logic rõ ràng, kiểm soát luồng tốt hơn, tránh swallow lỗi như try-catch.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Khi nào dùng <code>panic</code>? Khi nào không nên?
+    <pre><code>Dùng panic cho lỗi <strong>không thể hoặc không nên recover</strong>:
+- Vi phạm bất biến (bug lập trình)
+- Lỗi cấu hình nghiêm trọng (không tìm thấy file env, DB init fail...)
+
+Không dùng panic trong luồng xử lý business logic → phải return error.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> <code>recover()</code> dùng như thế nào? Có bắt được panic ngoài <code>defer</code> không?
+    <pre><code><code>recover()</code> chỉ hoạt động bên trong <code>defer</code>.
+
+→ Nếu gọi ngoài defer hoặc sau khi panic thoát hàm → không có tác dụng.
+
+Nên dùng để ngăn hệ thống crash và ghi log → nhưng tránh dùng để "bắt lỗi như catch".</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Tại sao cần <code>error wrapping</code>? Dùng thế nào?
+    <pre><code>Giúp giữ gốc lỗi khi truyền qua nhiều tầng → dễ trace và debug.
+
+Dùng: <code>fmt.Errorf("lỗi logic A: %w", err)</code>
+→ Tầng cao có thể dùng <code>errors.Is</code> hoặc <code>errors.As</code> để phân tích nguyên nhân gốc.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> So sánh <code>errors.Is()</code> vs <code>errors.As()</code>
+    <pre><code>- <code>Is()</code>: so sánh lỗi có giống 1 lỗi cụ thể không.
+- <code>As()</code>: check và ép kiểu lỗi về 1 struct cụ thể (e.g., *os.PathError).
+
+Dùng để xử lý khác nhau theo loại lỗi (IO, timeout, validation...).</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Stacktrace trong Go có sẵn không? Làm sao lấy?
+    <pre><code>Mặc định không – <code>error</code> không có stacktrace.
+
+Dùng thêm lib như:
+- <code>pkg/errors</code> (cũ)
+- <code>github.com/pkg/errors</code>
+- <code>uber/zap</code> hoặc <code>log/slog</code> → tích hợp stack nếu panic
+
+Hoặc: <code>debug.PrintStack()</code> trong defer/recover.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Nếu defer gọi panic → có chạy recover không?
+    <pre><code>Không. recover chỉ bắt panic sinh ra trước nó.
+
+→ Nếu panic xảy ra trong chính defer → sẽ không recover được.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Làm sao log error mà không mất stacktrace?
+    <pre><code>Dùng <code>fmt.Errorf(... %w, ...)</code> để wrap.
+
+Log kèm stack:
+- Dùng lib hỗ trợ (<code>zap</code>, <code>slog</code>, <code>errors.WithStack</code>)
+- Ghi thêm stack vào log trong <code>recover()</code> khi panic.
+
+→ Tránh log bằng fmt.Println – mất toàn bộ context.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Lỗi từ tầng trong truyền lên API trả về client nên format thế nào?
+    <pre><code>Dùng:
+- <strong>Wrap lỗi</strong> ở tầng trong → để log chi tiết
+- <strong>Map lỗi</strong> ra mã code + message thân thiện ở tầng handler (e.g: 400 Bad Request)
+
+Không trả raw lỗi kỹ thuật ra client.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Khi nào nên dùng sentinel error? Khi nào nên dùng error struct?
+    <pre><code><strong>Sentinel</strong> (biến error cụ thể): dùng khi cần so sánh rõ ràng (e.g., <code>ErrNotFound</code>).
+
+<strong>Error struct</strong>: dùng khi cần đính kèm context (field, cause, domain, retryable…)
+
+→ Kết hợp với <code>errors.As()</code> để phân loại xử lý.</code></pre>
+  </li>
+</ul>
 
 
 <hr />
@@ -1037,6 +1777,94 @@ func main() {
   <li>Kết hợp với tools như <code>ELK stack</code>, <code>Grafana Loki</code> để visualize và alert.</li>
 </ul>
 
+<h2>🎯 Câu hỏi phỏng vấn (Core + Senior)</h2>
+<ul>
+  <li>
+    <strong>Câu hỏi:</strong> Vì sao nên dùng structured logging thay vì <code>fmt.Println</code>?
+    <pre><code>Structured logging (dạng JSON/key-value) cho phép:
+✔ Dễ parse & search (qua Elastic, Loki…)
+✔ Tích hợp alert & trace theo field (e.g. trace_id, user_id)
+✔ Giảm lỗi do thiếu thông tin hoặc format sai
+
+<code>fmt.Println</code> chỉ log string → không phù hợp prod.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> So sánh logrus, zap, zerolog – nên dùng gì trong hệ thống lớn?
+    <pre><code>- <strong>logrus</strong>: dễ dùng, phổ biến nhưng chậm (dùng reflection)
+- <strong>zap</strong>: production-ready, high-perf, có stack trace, JSON log
+- <strong>zerolog</strong>: nhanh nhất, low alloc – nhưng API khác lạ
+
+Gợi ý: zap/zerolog cho backend nhiều traffic, logrus cho tool/dev.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Log nên chứa những thông tin gì trong hệ thống microservice?
+    <pre><code>✔ <strong>Trace ID</strong>, <strong>User ID</strong>, <strong>Request ID</strong>
+✔ Tên service + method
+✔ Latency, status code, retry count
+✔ Error + stack trace (nếu có)
+✔ Source IP hoặc auth context</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Tại sao cần tách stderr và stdout khi log trong container?
+    <pre><code>✔ stdout → info/debug log
+✔ stderr → error log (phân tích alert)
+
+Giúp orchestrator (e.g. Kubernetes, Docker) route log đúng stream → dễ filter + alerting.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Tích hợp trace-id vào log như thế nào?
+    <pre><code>- Gắn <code>trace_id</code> vào context.Context (HTTP hoặc gRPC header)
+- Log nào cũng extract từ context ra rồi inject vào logger
+→ Đảm bảo trace xuyên suốt toàn hệ thống</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Có nên log toàn bộ request/response không?
+    <pre><code>Không – chỉ log khi debug và <strong>phải mask dữ liệu nhạy cảm</strong>:
+✔ Token, password
+✔ Số tài khoản, email
+
+→ Dùng log level và scrubber (filter middleware) để kiểm soát.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Làm sao log lỗi mà vẫn giữ stacktrace?
+    <pre><code>- Dùng <code>zap.Error(err)</code> hoặc wrap lỗi chứa stack trace
+- Trong panic → log tại <code>recover()</code> kèm <code>debug.Stack()</code>
+
+→ Tránh mất context khi log lỗi tầng sâu.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Có nên log ở từng tầng service không? Vì sao?
+    <pre><code>Có – nhưng theo chuẩn:
+✔ Business layer → log input/output logic chính
+✔ Infra layer → log error kết nối, retry
+✔ Middleware → log trace-id, latency, panic recover
+
+→ Giúp trace theo chiều dọc, không log lặp.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Có nên log trong goroutine? Làm sao giữ được trace-id?
+    <pre><code>Có – nhưng cần <strong>truyền context</strong> vào goroutine để lấy trace-id.
+
+Nếu tạo goroutine mà không truyền đúng context → log sẽ thiếu metadata → khó trace.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Cách đo hiệu năng logging trong hệ thống?
+    <pre><code>- Dùng <code>pprof</code> để phân tích chi phí log
+- So sánh alloc / GC log giữa logrus/zap/zerolog
+- Benchmark log N dòng/s – xác định bottleneck nếu log quá nhiều</code></pre>
+  </li>
+</ul>
+
+
 
 <hr />
 <h1 id="13-testing-benchmark-table-driven-test">13. Testing, Benchmark, Table-Driven Test</h1>
@@ -1097,7 +1925,95 @@ func TestAdd(t *testing.T) {
   <li>Dùng <code>assert</code> libs như <code>stretchr/testify</code> khi test lớn.</li>
 </ul>
 
-<hr />
+<h2>🎯 Câu hỏi phỏng vấn (Core + Senior)</h2>
+<ul>
+  <li>
+    <strong>Câu hỏi:</strong> Khi nào nên dùng Table-Driven Test trong Go?
+    <pre><code>Khi test nhiều case giống nhau nhưng khác input/output:
+✔ Dễ maintain
+✔ Có thể đặt tên test từng case (dùng <code>t.Run()</code>)
+✔ Tránh lặp code → rõ ràng hơn trong CI/CD</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Benchmark trong Go hoạt động như thế nào?
+    <pre><code>Go sẽ chạy benchmark lặp đi lặp lại (b.N lần) để lấy số đo trung bình:
+✔ Đo CPU time (ns/op)
+✔ Đo số lần cấp phát bộ nhớ (alloc/op)
+✔ Có thể dùng <code>b.ReportAllocs()</code> để hiện thông tin chi tiết
+
+→ Dùng cho kiểm thử hiệu năng function, JSON, DB…</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Sự khác biệt giữa <code>t.Fatal()</code> và <code>t.Error()</code>?
+    <pre><code>- <code>t.Fatal()</code>: dừng test hiện tại → dùng khi lỗi nghiêm trọng, không thể tiếp tục.
+- <code>t.Error()</code>: log lỗi và chạy tiếp → phù hợp trong loop hoặc nhiều check.
+
+→ Giúp tối ưu feedback trong test report.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Làm sao test code có goroutine hoặc concurrent logic?
+    <pre><code>- Dùng <code>sync.WaitGroup</code> để chờ tất cả goroutine xong
+- Dùng channel để collect kết quả
+- Tránh race bằng <code>-race</code> flag khi chạy test
+
+→ Không dùng <code>time.Sleep</code> – không ổn định và chậm.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Làm sao test function có dùng context?
+    <pre><code>- Tạo <code>context.Background()</code> hoặc <code>context.WithTimeout</code>
+- Gắn <code>trace-id</code> nếu cần verify log
+- Đảm bảo test không leak goroutine bằng <code>ctx.Done()</code> trong worker
+
+→ Quan trọng trong microservice và gRPC test.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Có nên mock trong test Go không? Nếu có thì khi nào?
+    <pre><code>Có – nên mock khi:
+✔ Gọi ra DB, network, Kafka
+✔ Không muốn test logic bên thứ ba
+
+→ Dùng interface + inject mock, hoặc tool như <code>gomock</code>, <code>testify/mock</code>.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Làm sao test function có panic?
+    <pre><code>Wrap test trong <code>defer func() { recover() }</code> hoặc test log panic:
+✔ Đảm bảo recover hoạt động
+✔ Có thể kiểm tra nội dung panic
+
+→ Không nên để panic thật xảy ra trong test → làm hỏng CI.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Các công cụ nào hỗ trợ test coverage tốt cho Go?
+    <pre><code>- <code>go test -cover</code> → tổng quan
+- <code>go tool cover -html=...</code> → hiển thị chi tiết từng dòng
+- Tích hợp vào CI như GitHub Actions, GitLab, Jenkins để check % tối thiểu</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Test nào không nên chạy trong CI/CD?
+    <pre><code>- Test cần external dependency: database, Kafka… (nếu không mock)
+- Test có sleep/delay dài
+- Benchmark (trừ khi đo riêng)
+
+→ Dùng tag <code>// +build</code> để tách test chạy riêng hoặc manual.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Có thể test private function trong Go không?
+    <pre><code>Có – đặt test trong cùng package.
+
+Go không có visibility strict như Java/C# → test private function bằng cách đặt _test.go cùng thư mục.</code></pre>
+  </li>
+</ul>
+
+
 <hr />
 <h1 id="14-debugging-race-condition-deadlock">14. Debugging, Race Condition, Deadlock</h1>
 
@@ -1190,6 +2106,93 @@ go func() {
   <li>Viết log theo traceID để dễ theo dấu goroutine trong production</li>
 </ul>
 
+<h2>🎯 Câu hỏi phỏng vấn (Core + Senior)</h2>
+<ul>
+  <li>
+    <strong>Câu hỏi:</strong> Race condition là gì? Khi nào xảy ra trong Go?
+    <pre><code>Xảy ra khi 2+ goroutine truy cập/ghi cùng biến mà không đồng bộ hóa.
+
+→ Dẫn đến hành vi ngẫu nhiên, dữ liệu sai, crash khó trace.
+
+Ví dụ: update biến global, slice, map cùng lúc mà không dùng mutex hoặc channel.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Làm sao detect race condition?
+    <pre><code>Chạy Go với flag: <code>go run -race</code> hoặc <code>go test -race</code>.
+
+→ In ra vị trí đọc/ghi trùng nhau giữa goroutine → dễ trace.
+
+Chỉ phát hiện được <strong>race thực sự xảy ra</strong> trong lúc chạy – cần đủ load.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Deadlock là gì? Có thể xảy ra khi nào trong Go?
+    <pre><code>Khi tất cả goroutine đều block và không còn ai tiến lên → chương trình “treo”.
+
+Thường do:
+✔ Gửi vào channel mà không ai nhận
+✔ Goroutine chờ nhau (mutex vòng)
+✔ Close channel không đúng luồng</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Những kiểu resource nào dễ gây race trong Go?
+    <pre><code>✔ Map hoặc slice (không đồng bộ)
+✔ Pointer dùng chung
+✔ Counter, biến trạng thái toàn cục
+✔ context hoặc tx của DB bị share giữa goroutine</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Làm sao xử lý dữ liệu shared giữa goroutine an toàn?
+    <pre><code>✔ Dùng <code>sync.Mutex</code> hoặc <code>sync.RWMutex</code>
+✔ Dùng channel để truyền dữ liệu thay vì chia sẻ
+✔ Nếu là cấu trúc lớn – clone hoặc copy trước khi dùng</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Có nên dùng map trong goroutine? Làm sao cho thread-safe?
+    <pre><code>Mặc định <code>map</code> không thread-safe.
+
+→ Dùng <code>sync.Map</code> hoặc lock thủ công (mutex) khi cần concurrent read/write.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Cách tránh deadlock khi dùng mutex?
+    <pre><code>✔ Luôn <code>defer mu.Unlock()</code> ngay sau lock
+✔ Tránh lock lồng nhau hoặc nhiều mutex cùng lúc
+✔ Nếu bắt buộc dùng 2+ mutex → định nghĩa rõ thứ tự lock (lock hierarchy)</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Làm sao debug goroutine bị leak hoặc stuck?
+    <pre><code>✔ Dùng <code>pprof</code> + <code>runtime.NumGoroutine()</code> → kiểm tra số lượng goroutine sống
+✔ Gửi SIGQUIT → lấy full stack trace của tất cả goroutine
+✔ Log theo trace-id và trạng thái channel để trace dòng chảy</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Khi nào nên dùng channel vs mutex?
+    <pre><code><strong>Channel</strong>: dùng khi truyền dữ liệu qua lại giữa goroutine (message passing).
+<strong>Mutex</strong>: dùng khi nhiều goroutine cần cùng đọc/ghi biến chung.
+
+Rule:
+✔ Nếu chia sẻ → mutex
+✔ Nếu trao đổi → channel</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Gợi ý kỹ thuật nào giúp tránh bug race trong hệ thống lớn?
+    <pre><code>✔ Wrap shared resource trong struct + lock rõ ràng
+✔ Hạn chế dùng biến global
+✔ Viết test có <code>-race</code> + chạy stress test
+✔ Ghi log theo trace-id
+✔ Dùng context để lifecycle control (timeout/cancel đúng cách)</code></pre>
+  </li>
+</ul>
+
+
 <hr />
 <h1 id="15-memory-management--escape-analysis">15. Memory Management & Escape Analysis</h1>
 
@@ -1235,6 +2238,100 @@ func heapAlloc() *int {
   <li>Tránh giữ reference đến biến lớn trong closure nếu closure sống lâu.</li>
   <li>Chia nhỏ function để giúp compiler nhận ra vùng không cần escape.</li>
 </ul>
+
+<h2>🎯 Câu hỏi phỏng vấn (Core + Senior)</h2>
+<ul>
+  <li>
+    <strong>Câu hỏi:</strong> Stack và Heap khác nhau như thế nào trong Go?
+    <pre><code><strong>Stack</strong>:
+✔ Nhanh, nhỏ (~KB)
+✔ Auto reclaim khi hàm kết thúc
+✔ Dùng cho biến local không escape
+
+<strong>Heap</strong>:
+✔ Lớn, chậm hơn
+✔ Cần GC để giải phóng
+✔ Dùng cho biến escape ra ngoài scope</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Escape Analysis là gì? Có tác dụng gì?
+    <pre><code>Process compiler kiểm tra biến có “thoát” khỏi scope không.
+
+✔ Nếu không escape → cấp phát trên stack (nhanh hơn)
+✔ Nếu escape → lên heap → GC xử lý
+
+→ Giúp tối ưu memory và giảm áp lực GC.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Làm sao kiểm tra biến có bị escape không?
+    <pre><code>Chạy:
+<code>go build -gcflags="-m"</code>
+
+→ Compiler sẽ in log:
+<code>moved to heap</code> → biến bị escape
+→ Có thể refactor lại code để tránh.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Những tình huống phổ biến khiến biến escape?
+    <pre><code>✔ Trả về pointer đến local var
+✔ Closure giữ biến ngoài scope
+✔ Interface gán từ biến concrete
+✔ Sử dụng reflect, fmt.Sprintf() với tham chiếu</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Có nên return pointer của struct không?
+    <pre><code>Nên nếu:
+✔ Struct lớn → tránh copy
+✔ Sống lâu hoặc cần mutate sau khi return
+
+Nhưng phải cân nhắc escape lên heap và GC cost.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Làm sao tránh escape không cần thiết?
+    <pre><code>✔ Dùng value thay vì pointer nếu không mutate
+✔ Tránh closure giữ biến lớn
+✔ Tránh trả pointer ra ngoài nếu không cần
+✔ Sử dụng func nhỏ giúp compiler phân tích tốt hơn</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Go có thể inline function không? Tác động đến memory?
+    <pre><code>Có. Inline giúp giảm call overhead và giúp compiler phân tích escape tốt hơn.
+
+→ Function nhỏ, không gọi nhiều hàm khác dễ được inline.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Cấp phát động nhiều có ảnh hưởng gì đến GC?
+    <pre><code>✔ Tăng heap size → GC chạy nhiều hơn
+✔ Dễ tạo object sống lâu → cost lớn hơn khi mark/sweep
+→ Nên reuse object (e.g. sync.Pool) khi cần.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Làm sao kiểm tra code có tạo nhiều GC pressure?
+    <pre><code>✔ Dùng <code>pprof</code> → profile alloc
+✔ Dùng <code>go test -bench -benchmem</code> để đo alloc/op
+✔ Kiểm tra lượng heap tăng và thời gian GC qua log / Prometheus</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Có nên dùng <code>sync.Pool</code>? Khi nào dùng?
+    <pre><code>Có – dùng để reuse object tạm thời (e.g. buffer, struct lớn) giúp:
+✔ Giảm GC pressure
+✔ Tăng performance
+
+Không dùng cho object sống lâu hoặc mang state quan trọng.</code></pre>
+  </li>
+</ul>
+
+
+
 <hr />
 <h1 id="16-garbage-collection-và-runtime-scheduler">16. Garbage Collection và Runtime Scheduler</h1>
 
@@ -1311,6 +2408,109 @@ func heapAlloc() *int {
   </li>
 </ul>
 
+
+
+<h2>🎯 Câu hỏi phỏng vấn (Core + Senior)</h2>
+<ul>
+  <li>
+    <strong>Câu hỏi:</strong> Garbage Collector (GC) trong Go hoạt động như thế nào?
+    <pre><code>GC trong Go là dạng:
+✔ Tracing → tìm object được tham chiếu
+✔ Concurrent → chạy song song với goroutine
+✔ Generational → ưu tiên dọn object mới
+
+Chu kỳ gồm:
+1. STW (Stop The World): xác định root
+2. Mark (concurrent): đánh dấu object còn sống
+3. Sweep: thu hồi vùng nhớ không còn dùng</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> GOGC là gì? Ảnh hưởng như thế nào đến GC?
+    <pre><code><code>GOGC</code> là tỉ lệ tăng heap để kích hoạt GC (default = 100):
+✔ GOGC=100 → khi heap tăng 100% → GC chạy
+✔ GOGC thấp → GC chạy thường xuyên hơn (CPU tốn), heap nhỏ
+✔ GOGC cao → ít GC, heap lớn hơn (RAM nhiều)
+
+→ Tuỳ chọn theo profile CPU/RAM hệ thống.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Khi nào GC được trigger?
+    <pre><code>✔ Heap vượt ngưỡng tăng của GOGC
+✔ Manual gọi <code>runtime.GC()</code>
+✔ Go runtime cảm nhận load phù hợp
+✔ Khi không còn goroutine active (idle state)</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Có nên dùng <code>runtime.GC()</code> không?
+    <pre><code>Chỉ dùng khi thật sự cần:
+✔ Benchmark test để đo clean memory
+✔ Khi biết rõ thời điểm muốn quét sạch trước khi process lớn
+
+Không dùng trong code production thường xuyên → ảnh hưởng performance.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Những kỹ thuật tối ưu giúp giảm áp lực GC?
+    <pre><code>✔ Tránh cấp phát động không cần thiết
+✔ Dùng <code>sync.Pool</code> để reuse object
+✔ Xoá reference object sớm (gán nil)
+✔ Tránh giữ object lâu trong closure hoặc global</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Runtime scheduler của Go là gì? Làm việc ra sao?
+    <pre><code>Là hệ thống M:N scheduler:
+✔ G: Goroutine
+✔ M: OS Thread
+✔ P: Processor (runtime logical processor)
+
+→ P lên lịch G chạy trên M. P nhiều = nhiều goroutine xử lý song song.
+→ GOMAXPROCS điều chỉnh số P (số core dùng).</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> GOMAXPROCS là gì? Có ảnh hưởng gì?
+    <pre><code><code>GOMAXPROCS</code> = số core logic Go sử dụng song song:
+✔ Default = runtime.NumCPU()
+✔ Tăng/làm giảm concurrency xử lý
+✔ Có thể điều chỉnh để kiểm soát load CPU
+
+→ Dùng <code>runtime.GOMAXPROCS(N)</code> để thiết lập.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Go quản lý goroutine như thế nào?
+    <pre><code>✔ Goroutine rất nhẹ (~2KB stack)
+✔ Khi block I/O → runtime chuyển goroutine khác lên thread
+✔ Stack tự động grow/shrink → tránh lỗi stack overflow
+✔ Scheduler chuyển goroutine liên tục (preemptive)</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> GC có ảnh hưởng đến latency không? Làm sao hạn chế?
+    <pre><code>Có. Dù GC concurrent, nhưng vẫn có STW (ngắn).
+
+→ Nếu object lớn hoặc quá nhiều → mark chậm, sweep tốn time → tăng latency.
+✔ Dùng buffer object
+✔ Giảm alloc per request
+✔ Xem log GC hoặc Prometheus GC time</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Dấu hiệu nào cho thấy hệ thống bị GC pressure?
+    <pre><code>✔ Tăng đột biến GC pause time
+✔ Số lần GC nhiều bất thường
+✔ CPU cao nhưng throughput thấp
+✔ Memory graph "sawtooth" dày đặc
+
+→ Phân tích bằng pprof hoặc Prometheus + grafana</code></pre>
+  </li>
+</ul>
+
+
 <hr />
 <h1 id="17-build-system-và-cross-compilation">17. Build System và Cross Compilation</h1>
 
@@ -1346,6 +2546,109 @@ GOOS=windows GOARCH=386 go build -o app.exe
   <li>Binary Go tự đủ → deploy cực kỳ dễ dàng.</li>
   <li>Dọn dependency bằng <code>go mod tidy</code> để build sạch và nhẹ hơn.</li>
 </ul>
+
+
+<h2>🎯 Câu hỏi phỏng vấn (Core + Senior)</h2>
+<ul>
+  <li>
+    <strong>Câu hỏi:</strong> Go biên dịch code như thế nào? Có qua linker không?
+    <pre><code>Có. <code>go build</code> thực hiện:
+1. Phân tích dependency từ <code>import</code>
+2. Compile từng package riêng biệt
+3. Dùng linker tích hợp để build ra binary
+
+→ Binary là static, standalone – không cần external runtime.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Sự khác biệt giữa <code>go run</code> và <code>go build</code> là gì?
+    <pre><code><code>go run</code>: build tạm và chạy (file binary ở /tmp)
+<code>go build</code>: build binary vĩnh viễn → deploy, debug, profile
+
+→ <code>go run</code> phù hợp test nhanh, <code>go build</code> dùng cho release.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Làm sao để build cho hệ điều hành khác?
+    <pre><code>Set biến môi trường:
+<code>GOOS</code>: OS (linux, windows, darwin)
+<code>GOARCH</code>: CPU arch (amd64, arm64, 386,...)
+
+Ví dụ:
+<code>GOOS=linux GOARCH=amd64 go build -o app</code></code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Có thể build Go binary không có symbol/debug info?
+    <pre><code>Có. Dùng flags:
+<code>go build -ldflags="-s -w"</code>
+
+✔ <code>-s</code>: bỏ symbol table
+✔ <code>-w</code>: bỏ DWARF (debug info)
+
+→ Binary nhỏ hơn → tốt cho release.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Có cần Makefile khi build Go project không?
+    <pre><code>Không bắt buộc. Go đã có toolchain tích hợp:
+✔ Dependency resolved qua <code>go.mod</code>
+✔ Lệnh build/test/format/lint đều CLI native
+
+→ Nhưng Makefile vẫn hữu ích khi cần orchestration nhiều bước hoặc multi target.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Làm sao kiểm tra version Go của 1 project?
+    <pre><code>Kiểm tra file <code>go.mod</code> → dòng <code>go 1.21</code>
+→ Đây là minimal version required (used for stdlib + syntax).</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Build Go image nhỏ trong Docker như thế nào?
+    <pre><code>Dùng multi-stage build:
+1. Base: build binary
+2. Final: copy binary vào image nhẹ (e.g. <code>alpine</code>)
+
+→ Ví dụ:
+FROM golang:1.21 AS builder  
+WORKDIR /app  
+COPY . .  
+RUN go build -o main  
+
+FROM alpine  
+COPY --from=builder /app/main /main  
+ENTRYPOINT ["/main"]
+</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Có thể build plugin động (shared object) trong Go không?
+    <pre><code>Có – dùng:
+<code>go build -buildmode=plugin</code>
+
+→ Nhưng chỉ hỗ trợ Linux, khó debug và có nhiều hạn chế → không phổ biến production.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Làm sao verify một binary build có đủ symbol/debug cho pprof?
+    <pre><code>Chạy:
+<code>go tool nm ./your_binary</code> → kiểm tra symbol table
+
+Nếu bị strip (-ldflags="-s -w") → không dùng được pprof/tracing tốt.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Những tip để tối ưu tốc độ build Go project lớn?
+    <pre><code>✔ Dùng module riêng cho từng repo (module split)
+✔ Tránh import vòng
+✔ Dọn go.mod</code> bằng <code>go mod tidy</code>
+✔ Cache build trong CI/CD (e.g. GitHub Actions, GitLab)
+✔ Tránh dùng CGO nếu không cần</code></pre>
+  </li>
+</ul>
+
+
 
 <hr />
 <h1 id="18-generics-type-parameter-và-constraint">18. Generics: Type Parameter và Constraint</h1>
@@ -1451,6 +2754,100 @@ func Filter[T any](in []T, predicate func(T) bool) []T {
   <li>Viết constraint rõ ràng để code dễ đọc, không để <code>[T any]</code> quá rộng</li>
   <li>Dùng generics kết hợp interface để enforce behavior rõ ràng</li>
 </ul>
+
+<h2>🎯 Câu hỏi phỏng vấn (Core + Senior)</h2>
+<ul>
+  <li>
+    <strong>Câu hỏi:</strong> Go hỗ trợ Generics từ phiên bản nào? Vì sao trước đây không có?
+    <pre><code>Từ Go 1.18+
+Trước đây Go ưu tiên đơn giản, explicit type, tránh runtime generic → khó maintain.
+Generics thêm vào để tăng reusability nhưng vẫn giữ compile-time safety.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Generics có thể áp dụng cho những loại nào?
+    <pre><code>✔ Function: <code>func[T any](a T) T</code>
+✔ Struct: <code>type Box[T any] struct</code>
+✔ Method receiver
+✔ Interface constraint
+Không áp dụng cho constant/generic enum.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> <code>comparable</code> và <code>constraints.Ordered</code> khác gì nhau?
+    <pre><code><strong>comparable</strong>: hỗ trợ <code>==</code>, <code>!=</code> (dùng làm key map, so sánh đơn giản)
+
+<strong>Ordered</strong>: hỗ trợ <code>&lt;</code>, <code>&gt;</code>, <code>&lt;=</code>, <code>&gt;=</code> (sắp xếp được)
+→ Ordered bao gồm: int, float, string</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Có thể dùng Generics cho interface được không?
+    <pre><code>Có – định nghĩa interface constraint:
+<code>type Adder[T any] interface { Add(T) T }</code>
+
+→ Áp dụng cho struct, func muốn enforce method cụ thể.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Ưu điểm và bất lợi của Generics trong Go là gì?
+    <pre><code><strong>Ưu điểm:</strong>
+✔ Reuse code với type safety
+✔ Không cần dùng interface{} + type assertion
+✔ Gần với functional pattern (map/filter)
+
+<strong>Nhược điểm:</strong>
+✘ Cú pháp dài, khó đọc khi lồng nhau
+✘ IDE/debug support chưa tốt
+✘ Không hỗ trợ tất cả pattern như overloading</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Generics compile thành code như thế nào? Có bị tạo nhiều version không?
+    <pre><code>Go sử dụng <strong>monomorphization partial</strong>:
+✔ Với type cụ thể: tạo version riêng (như template C++)
+✔ Với interface hoặc <code>any</code>: dùng 1 version dùng interface runtime
+
+→ Không tạo quá nhiều binary bloating như C++, nhưng vẫn đảm bảo type safety.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Khi nào nên dùng Generics, khi nào nên tránh?
+    <pre><code><strong>Dùng:</strong>
+✔ Collection utilities: Map, Filter, Stack, Pagination...
+✔ Logic xử lý data không phụ thuộc type
+✔ Middleware reusable
+
+<strong>Tránh:</strong>
+✘ Business logic đặc thù
+✘ Giao diện API public → không rõ ràng
+✘ Khi cần reflection hoặc serialization phức tạp</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Có thể gọi method cụ thể trên type param không?
+    <pre><code>Chỉ khi constraint interface khai báo method đó:
+<code>type JSONable interface { MarshalJSON() ([]byte, error) }</code>
+<code>func ToJSON[T JSONable](v T) []byte</code>
+
+→ Nếu <code>T any</code>, không thể gọi method vì không biết method tồn tại.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Generics có thể kết hợp với <code>sync.Pool</code> hay channel không?
+    <pre><code>✔ Có thể tạo <code>GenericPool[T any]</code> bọc <code>sync.Pool</code> → hỗ trợ reuse object theo kiểu cụ thể
+✔ Channel hiện không hỗ trợ generic type param cho type channel declaration</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Có cần viết test cho từng type khi dùng Generics không?
+    <pre><code>Không bắt buộc, nhưng <strong>nên test các type phổ biến</strong> để đảm bảo logic đúng theo constraint.
+→ Table-driven test nên dùng nhiều case type khác nhau.</code></pre>
+  </li>
+</ul>
+
+
+
 <hr />
 <h1 id="19-api--middleware-rest-grpc-interceptor">19. API & Middleware: REST, gRPC, Interceptor</h1>
 
@@ -1608,6 +3005,106 @@ traceID := md["x-trace-id"]
   <li>Dùng interceptor để chia nhỏ concern (log, validate, panic recovery)</li>
   <li>Ưu tiên bidirectional stream cho các use case realtime (chat, tracking...)</li>
 </ul>
+<h2>🎯 Câu hỏi phỏng vấn (Core + Senior)</h2>
+
+<h3>🔹 REST API</h3>
+<ul>
+  <li>
+    <strong>Câu hỏi:</strong> So sánh <code>net/http</code>, <code>gin</code>, <code>echo</code>?
+    <pre><code>net/http: lib gốc, cần tự code nhiều.
+gin: nhanh, hỗ trợ middleware tốt.
+echo: tiện ích nhiều hơn gin, rõ ràng hơn.</code></pre>
+  </li>
+  <li>
+    <strong>Câu hỏi:</strong> Làm middleware auth hoặc log trong REST như thế nào?
+    <pre><code>func Middleware(next http.Handler) http.Handler {
+  return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+    log.Println("request", r.URL.Path)
+    next.ServeHTTP(w, r)
+  })
+}</code></pre>
+  </li>
+  <li>
+    <strong>Câu hỏi:</strong> Truyền trace-id từ client đến log hệ thống?
+    <pre><code>Header: x-trace-id
+→ Đọc từ header, inject vào context, ghi log theo context.</code></pre>
+  </li>
+</ul>
+
+<h3>🔹 gRPC (Unary, Stream)</h3>
+<ul>
+  <li>
+    <strong>Câu hỏi:</strong> Ưu điểm của gRPC so với REST?
+    <pre><code>- Sử dụng Protobuf → nhỏ, nhanh
+- Hỗ trợ stream (2 chiều)
+- Contract rõ ràng → generate code
+- Thích hợp cho internal service</code></pre>
+  </li>
+  <li>
+    <strong>Câu hỏi:</strong> Có những kiểu RPC nào trong gRPC?
+    <pre><code>1. Unary RPC (1-1)
+2. Server Stream (1 request → nhiều response)
+3. Client Stream (nhiều request → 1 response)
+4. Bidirectional Stream (2 chiều song song)</code></pre>
+  </li>
+  <li>
+    <strong>Câu hỏi:</strong> Khi nào dùng client stream?
+    <pre><code>Upload file, push log batch → client gửi nhiều phần rồi CloseAndRecv()</code></pre>
+  </li>
+  <li>
+    <strong>Câu hỏi:</strong> Cách truyền metadata trong gRPC?
+    <pre><code>ctx := metadata.NewOutgoingContext(ctx, metadata.Pairs("x-trace-id", "abc"))
+→ Server dùng metadata.FromIncomingContext(ctx)</code></pre>
+  </li>
+  <li>
+    <strong>Câu hỏi:</strong> Có thể map gRPC → REST không?
+    <pre><code>Có. Dùng grpc-gateway hoặc Envoy gRPC Transcoding:
+option (google.api.http) = { post: "/v1/foo", body: "*" }</code></pre>
+  </li>
+</ul>
+
+<h3>🔹 Interceptor (gRPC Middleware)</h3>
+<ul>
+  <li>
+    <strong>Câu hỏi:</strong> Interceptor là gì? Có mấy loại?
+    <pre><code>UnaryInterceptor → áp dụng cho RPC thường.
+StreamInterceptor → áp dụng cho RPC stream.
+→ Tương đương middleware trong REST.</code></pre>
+  </li>
+  <li>
+    <strong>Câu hỏi:</strong> Viết interceptor logging đơn giản?
+    <pre><code>func LogInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+  log.Println("gRPC:", info.FullMethod)
+  return handler(ctx, req)
+}</code></pre>
+  </li>
+  <li>
+    <strong>Câu hỏi:</strong> Có thể chain nhiều interceptor không?
+    <pre><code>grpc.NewServer(grpc.ChainUnaryInterceptor(Auth, Log, Recover))</code></pre>
+  </li>
+</ul>
+
+<h3>🔸 So sánh tổng hợp</h3>
+<ul>
+  <li>
+    <strong>Câu hỏi:</strong> Khi nào chọn REST, khi nào chọn gRPC?
+    <pre><code>REST: public API, dễ debug, dễ tích hợp frontend.
+gRPC: nội bộ service, cần hiệu năng cao, hỗ trợ stream.</code></pre>
+  </li>
+  <li>
+    <strong>Câu hỏi:</strong> Có nên dùng cả REST + gRPC trong hệ thống?
+    <pre><code>Có. Dùng gRPC nội bộ, expose HTTP bằng grpc-gateway cho external.</code></pre>
+  </li>
+  <li>
+    <strong>Câu hỏi:</strong> gRPC stream có bị race không? Cách xử lý?
+    <pre><code>Stream là shared object → không nên gọi Send/Recv từ nhiều goroutine cùng lúc.
+→ Phải serialize việc gọi Send hoặc Recv bằng channel hoặc mutex.</code></pre>
+  </li>
+</ul>
+
+
+
+
 <hr />
 <h1 id="20-error-wrapping-stacktrace-và-structured-logging">20. Error Wrapping, Stacktrace, và Structured Logging</h1>
 
@@ -1653,6 +3150,88 @@ fmt.Printf("%+v\\n", err) // đầy đủ stack trace
   <li>Đính trace-id vào log → trace toàn hành trình request</li>
   <li>Middleware → log panic, recover, status code, latency</li>
 </ul>
+
+
+
+<h2>🎯 Câu hỏi phỏng vấn (Core + Senior)</h2>
+
+<h3>🔹 Error Wrapping & Stacktrace</h3>
+<ul>
+  <li>
+    <strong>Câu hỏi:</strong> Lợi ích của việc wrap error trong Go?
+    <pre><code>- Giữ ngữ cảnh lỗi khi truyền qua các tầng.
+- Hỗ trợ trace chính xác gốc lỗi khi log/debug.
+- Dùng được với errors.Is, errors.As để phân tích lỗi sâu.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Viết ví dụ wrap và unwrap error?
+    <pre><code>err := fmt.Errorf("gọi thất bại: %w", dbErr)
+if errors.Is(err, sql.ErrNoRows) { ... }
+if e, ok := err.(*MyCustomError); ok { ... }</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Làm sao lấy được stack trace khi lỗi?
+    <pre><code>Dùng pkg/errors:
+err := errors.Wrap(err, "ngữ cảnh thêm")
+fmt.Printf("%+v", err)</code></pre>
+  </li>
+</ul>
+
+<h3>🔹 Structured Logging</h3>
+<ul>
+  <li>
+    <strong>Câu hỏi:</strong> Structured logging là gì? Khác gì với print log thường?
+    <pre><code>Structured log = log dạng JSON hoặc key-value.
+→ Dễ parse, lọc theo field (user_id, trace_id...).
+→ Phù hợp với ELK, Loki, GCP log viewer...</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> So sánh logrus, zap, zerolog?
+    <pre><code>- logrus: dễ dùng, phổ biến, chậm hơn do reflection.
+- zap: rất nhanh, JSON log, production ready.
+- zerolog: cực nhanh, write trực tiếp, API hơi khác.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Làm sao enrich log bằng trace-id trong context?
+    <pre><code>traceID := ctx.Value("trace_id").(string)
+log.WithField("trace_id", traceID).Info("processing...")</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Có nên log error raw hay wrap lại?
+    <pre><code>→ Nên wrap trước rồi log:
+log.Errorf("gọi backend: %v", err)
+→ Dễ trace lỗi cụ thể, stack đầy đủ.</code></pre>
+  </li>
+</ul>
+
+<h3>🔹 Best Practice</h3>
+<ul>
+  <li>
+    <strong>Câu hỏi:</strong> Có nên log lỗi ở tầng usecase không?
+    <pre><code>Không nên. Tầng usecase nên trả lỗi có ngữ cảnh.
+→ Logging chỉ nên đặt tại boundary: handler, cron, job worker.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Nên dùng <code>log.Printf</code> hay structured log trong prod?
+    <pre><code>Không nên dùng Printf.
+→ Dùng structured log để có thể trace theo field.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Vì sao cần log kèm trace-id hoặc request-id?
+    <pre><code>Để theo dõi toàn bộ flow xử lý của 1 request xuyên qua nhiều service → dễ debug & quan sát production.</code></pre>
+  </li>
+</ul>
+
+
+
+
 <hr />
 <h1 id="21-staticcheck-golangci-lint-go-vet-go-fmt">21. Staticcheck, GolangCI-Lint, go vet, go fmt</h1>
 
@@ -1699,6 +3278,82 @@ run:
   <li>Tích hợp golangci-lint vào GitHub Actions để check toàn bộ project</li>
   <li>Dùng <code>//nolint</code> đúng mục tiêu – không suppress toàn file</li>
 </ul>
+
+
+<h2>🎯 Câu hỏi phỏng vấn (Core + Senior)</h2>
+
+<h3>🔹 Kiểm tra & định dạng code</h3>
+<ul>
+  <li>
+    <strong>Câu hỏi:</strong> Khác biệt giữa <code>go fmt</code> và <code>go vet</code>?
+    <pre><code>go fmt: định dạng lại code theo chuẩn Go (spacing, bracket...).
+go vet: phát hiện lỗi logic tiềm ẩn (printf sai format, shadow...).</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> <code>go vet</code> phát hiện được những lỗi nào?
+    <pre><code>- Gọi printf sai định dạng
+- Gán biến bị shadow
+- Struct tag lỗi
+- Unreachable code...</code></pre>
+  </li>
+</ul>
+
+<h3>🔹 Staticcheck & GolangCI-Lint</h3>
+<ul>
+  <li>
+    <strong>Câu hỏi:</strong> Staticcheck kiểm tra những gì?
+    <pre><code>- Dead code (hàm không gọi tới)
+- Unused variable
+- Check điều kiện lặp vô nghĩa
+- Interface bị dùng sai logic...</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> GolangCI-Lint là gì? Dùng thế nào?
+    <pre><code>GolangCI-Lint là tool tổng hợp nhiều linter (staticcheck, errcheck, govet...).
+→ Dùng để check toàn bộ project, tích hợp CI/CD.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Làm sao disable 1 warning trong 1 dòng?
+    <pre><code>//nolint:errcheck
+doSomething() // không bắt lỗi trả về</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Lint không fail CI, bạn xử lý thế nào?
+    <pre><code>- Đọc chi tiết log: lỗi format, unused, logic?
+- Dùng goimports/go fmt trước.
+- Nếu bất hợp lý → disable từng dòng bằng //nolint.</code></pre>
+  </li>
+</ul>
+
+<h3>🔹 Best Practice & CI</h3>
+<ul>
+  <li>
+    <strong>Câu hỏi:</strong> Dòng lệnh CI phổ biến bạn dùng?
+    <pre><code>go fmt ./...
+go vet ./...
+golangci-lint run
+go test -cover ./...
+gosec ./... (check security)</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Vì sao nên bắt buộc dùng lint trong team?
+    <pre><code>Đảm bảo code rõ ràng, nhất quán.
+Phát hiện lỗi sớm → giảm bug runtime.
+Tiết kiệm thời gian review code.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Có nên tắt toàn bộ warning linter?
+    <pre><code>Không. Chỉ tắt từng dòng khi chắc chắn không ảnh hưởng logic.
+→ Nếu tắt toàn bộ sẽ mất ý nghĩa static analysis.</code></pre>
+  </li>
+</ul>
+
 
 <hr />
 <h1 id="22-design-patterns-trong-go">22. Design Patterns trong Go</h1>
@@ -1812,6 +3467,135 @@ func WithPort(p int) Option {
 </ul>
 
 
+<h2>🎯 Câu hỏi phỏng vấn (Core + Senior)</h2>
+
+<h3>🔹 Tổng quan Design Pattern</h3>
+<ul>
+  <li>
+    <strong>Câu hỏi:</strong> Vì sao trong Go ít dùng inheritance? Thay thế bằng gì?
+    <pre><code>Go không hỗ trợ class-based OOP → không có extends.
+→ Thay bằng composition + interface → dễ kiểm soát, testable, clear.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Pattern nào phổ biến trong hệ thống backend Go?
+    <pre><code>- Factory → khởi tạo instance (db, log, grpc...)
+- Singleton → giữ 1 instance dùng chung
+- Strategy → xử lý logic runtime (auth, retry...)
+- Functional Option → config linh hoạt khi init struct
+- Decorator → middleware, logging, wrapping handler</code></pre>
+  </li>
+</ul>
+
+<h3>🔸 Factory</h3>
+<ul>
+  <li>
+    <strong>Câu hỏi:</strong> Viết factory init database theo engine khác nhau?
+    <pre><code>func NewDB(engine string) DB {
+  switch engine {
+  case "mysql": return &MySQL{}
+  case "pg": return &Postgres{}
+  default: panic("unsupported")
+}</code></pre>
+  </li>
+</ul>
+
+<h3>🔸 Singleton</h3>
+<ul>
+  <li>
+    <strong>Câu hỏi:</strong> Triển khai Singleton an toàn trong goroutine?
+    <pre><code>var once sync.Once
+var instance *Logger
+
+func GetLogger() *Logger {
+  once.Do(func() {
+    instance = &Logger{}
+  })
+  return instance
+}</code></pre>
+  </li>
+</ul>
+
+<h3>🔸 Strategy</h3>
+<ul>
+  <li>
+    <strong>Câu hỏi:</strong> Pattern Strategy được áp dụng như nào trong auth middleware?
+    <pre><code>type AuthStrategy interface {
+  Authenticate(token string) bool
+}
+
+func DoAuth(s AuthStrategy, token string) {
+  if !s.Authenticate(token) {
+    panic("unauthorized")
+  }
+}</code></pre>
+  </li>
+</ul>
+
+<h3>🔸 Functional Option</h3>
+<ul>
+  <li>
+    <strong>Câu hỏi:</strong> Ưu điểm của Functional Option trong khởi tạo object?
+    <pre><code>- Tránh constructor quá dài
+- Hỗ trợ optional config dễ dàng
+- Không cần nhiều hàm NewXxx overload</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Viết ví dụ Functional Option setup Server?
+    <pre><code>type Option func(*Server)
+
+func WithPort(p int) Option {
+  return func(s *Server) { s.Port = p }
+}
+
+func NewServer(opts ...Option) *Server {
+  s := &Server{}
+  for _, o := range opts {
+    o(s)
+  }
+  return s
+}</code></pre>
+  </li>
+</ul>
+
+<h3>🔸 Decorator</h3>
+<ul>
+  <li>
+    <strong>Câu hỏi:</strong> Decorator được dùng nhiều nhất ở đâu trong Go?
+    <pre><code>- HTTP/gRPC middleware
+- Logging/Recovery Wrapper
+- Retry logic quanh hàm gọi API</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Viết decorator đơn giản log thời gian chạy?
+    <pre><code>func Timing(fn func()) func() {
+  return func() {
+    start := time.Now()
+    fn()
+    fmt.Println("took:", time.Since(start))
+  }
+}</code></pre>
+  </li>
+</ul>
+
+<h3>🔹 Best Practice</h3>
+<ul>
+  <li>
+    <strong>Câu hỏi:</strong> Pattern nào dễ bị lạm dụng và khó debug?
+    <pre><code>Functional Option nếu không log rõ → cấu hình bị override ngầm.
+Singleton → dễ gây hidden state, khó test nếu không mockable.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Khi nào nên dùng Factory thay vì inject struct trực tiếp?
+    <pre><code>- Khi cần quyết định runtime (giao thức, database, strategy...).
+- Khi init phức tạp → tách Factory ra dễ test và maintain.</code></pre>
+  </li>
+</ul>
+
+
 
 <hr />
 <h1 id="23-system-design-worker-pool-fan-inout-pipeline">23. System Design: Worker Pool, Fan-in/out, Pipeline</h1>
@@ -1910,6 +3694,124 @@ func square(in <-chan int) <-chan int {
   <li><strong>Pipeline</strong>: ETL, stream xử lý log, event</li>
 </ul>
 
+
+<h2>🎯 Câu hỏi phỏng vấn (Core + Senior)</h2>
+
+<h3>🔹 Tổng quan mô hình xử lý song song</h3>
+<ul>
+  <li>
+    <strong>Câu hỏi:</strong> Fan-out và Fan-in khác nhau thế nào?
+    <pre><code>Fan-out: nhiều goroutine cùng xử lý chung 1 nguồn (channel in).
+Fan-in: nhiều nguồn dữ liệu hợp nhất lại 1 channel out.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Khi nào nên dùng Worker Pool?
+    <pre><code>- Khi muốn giới hạn số goroutine xử lý cùng lúc (giảm memory, tránh overload).
+- Khi task nhiều nhưng độ dài xử lý không đều.</code></pre>
+  </li>
+</ul>
+
+<h3>🔸 Worker Pool</h3>
+<ul>
+  <li>
+    <strong>Câu hỏi:</strong> Cách triển khai worker pool an toàn?
+    <pre><code>- Tạo 1 channel chứa job.
+- Tạo N worker goroutine nhận job qua channel.
+- Gửi job vào channel và close sau khi xong.
+- Worker ghi kết quả ra channel kết quả.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Làm sao tránh leak goroutine trong worker pool?
+    <pre><code>- Đảm bảo tất cả worker đọc từ channel đến khi đóng.
+- Sử dụng WaitGroup để đợi toàn bộ worker kết thúc.
+- Không dùng channel không buffer nếu sender/receiver lệch pha.</code></pre>
+  </li>
+</ul>
+
+<h3>🔸 Fan-in</h3>
+<ul>
+  <li>
+    <strong>Câu hỏi:</strong> Cách gộp nhiều channel về 1 channel?
+    <pre><code>func merge(chs ...<-chan int) <-chan int {
+  out := make(chan int)
+  var wg sync.WaitGroup
+  for _, c := range chs {
+    wg.Add(1)
+    go func(c <-chan int) {
+      defer wg.Done()
+      for v := range c {
+        out <- v
+      }
+    }(c)
+  }
+  go func() {
+    wg.Wait()
+    close(out)
+  }()
+  return out
+}</code></pre>
+  </li>
+</ul>
+
+<h3>🔸 Pipeline</h3>
+<ul>
+  <li>
+    <strong>Câu hỏi:</strong> Mô hình pipeline dùng cho mục đích gì?
+    <pre><code>- Tách xử lý thành nhiều bước rõ ràng (stage).
+- Dễ kết hợp xử lý tuần tự và song song (stream data).
+- Ứng dụng trong ETL, xử lý file, log stream, etc.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Tính chất của pipeline tốt?
+    <pre><code>- Không share state giữa stage.
+- Mỗi stage nên là pure function hoặc goroutine riêng.
+- Có cơ chế close channel cuối để tránh leak.</code></pre>
+  </li>
+</ul>
+
+<h3>🔹 Performance & Tối ưu</h3>
+<ul>
+  <li>
+    <strong>Câu hỏi:</strong> Nên dùng channel nào? Buffered hay unbuffered?
+    <pre><code>- Buffered: tốt khi producer nhanh hơn consumer → giảm block.
+- Unbuffered: tốt khi cần đồng bộ hóa chặt (1 gửi – 1 nhận).</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Race condition có thể xảy ra trong các mô hình này không?
+    <pre><code>Có. Nếu nhiều goroutine cùng ghi slice/map hoặc dùng biến chung mà không có lock.
+→ Dùng sync.Mutex hoặc channel để đồng bộ.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Ưu điểm khi combine Fan-out → Pipeline → Fan-in?
+    <pre><code>- Tối đa hoá concurrency
+- Tách biệt rõ từng giai đoạn
+- Dễ scale từng bước độc lập</code></pre>
+  </li>
+</ul>
+
+<h3>🔹 Use case thực tế</h3>
+<ul>
+  <li>
+    <strong>Câu hỏi:</strong> Gợi ý ứng dụng Fan-out trong backend system?
+    <pre><code>- Đọc file lớn và chia task xử lý theo dòng.
+- Gửi API song song đến nhiều service.
+- Worker xử lý job queue từ Kafka, Redis.</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Gợi ý ứng dụng Pipeline trong Go project thực tế?
+    <pre><code>- Stream log → parse → enrich → send đến Kafka.
+- Load CSV → validate → transform → lưu DB.
+- Nhận request → verify → enrich user → forward đến backend khác.</code></pre>
+  </li>
+</ul>
+
+
 <hr />
 <h1 id="24-secure-coding-và-cicd-workflow">24. Secure Coding và CI/CD Workflow</h1>
 
@@ -1949,6 +3851,102 @@ func square(in <-chan int) <-chan int {
   <li>Scan code bảo mật mỗi merge request</li>
   <li>Structured logging để trace behavior nguy hiểm</li>
 </ul>
+
+<h2>🎯 Câu hỏi phỏng vấn (Core + Senior)</h2>
+
+<h3>🔐 Secure Coding</h3>
+<ul>
+  <li>
+    <strong>Câu hỏi:</strong> Những lỗi bảo mật phổ biến trong Go là gì?
+    <pre><code>- Không kiểm tra input → XSS, SQLi
+- Lộ thông tin nhạy cảm trong log (token, password)
+- Dùng crypto yếu (MD5, SHA1)
+- Hardcode secret / API key trong source</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Làm sao để bảo vệ API khỏi DDoS hoặc abuse?
+    <pre><code>- Thêm timeout context vào mỗi request
+- Sử dụng rate limit (Envoy, middleware)
+- Thêm auth/token, quota</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Bạn bảo vệ secret (token, config) trong codebase như thế nào?
+    <pre><code>- Không bao giờ commit file .env / config thực
+- Dùng biến môi trường hoặc secret manager (Vault, AWS Secret)
+- Với CI/CD: inject secret qua môi trường runtime</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Vì sao logging sai cách có thể gây rủi ro bảo mật?
+    <pre><code>- Ghi nội dung nhạy cảm như token/password → bị leak nếu có lỗi hoặc attack
+- Ghi lỗi nội bộ quá chi tiết → lộ stacktrace, cấu trúc hệ thống</code></pre>
+  </li>
+</ul>
+
+<h3>🧪 Static Security Scan</h3>
+<ul>
+  <li>
+    <strong>Câu hỏi:</strong> Công cụ nào dùng để scan bảo mật cho project Go?
+    <pre><code>→ Gosec: quét lỗ hổng như hardcoded credentials, bind-all, eval code, TLS weak</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Ví dụ lệnh scan bảo mật code Go?
+    <pre><code>gosec ./...   # quét tất cả file .go trong module hiện tại</code></pre>
+  </li>
+</ul>
+
+<h3>🚀 CI/CD Workflow</h3>
+<ul>
+  <li>
+    <strong>Câu hỏi:</strong> CI/CD cho Go thường gồm những bước nào?
+    <pre><code>- go fmt + vet + lint
+- go test + coverage
+- gosec security scan
+- build binary (go build)
+- docker build & push image
+- deploy (K8s, ECS, Lambda...)</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Làm sao đảm bảo CI/CD không leak thông tin?
+    <pre><code>- Không log secret, token (dùng redacted output)
+- Không echo toàn bộ env
+- Không lưu file .env vào image</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Bạn đã gặp lỗi nào nghiêm trọng trong CI/CD chưa?
+    <pre><code>- Build không kiểm tra coverage → bug lọt qua
+- Push image chứa credential hardcode
+- Secret bị leak qua log GitHub Actions</code></pre>
+  </li>
+</ul>
+
+<h3>📦 Best Practice cho Go trong CI/CD</h3>
+<ul>
+  <li>
+    <strong>Câu hỏi:</strong> Làm sao cấu hình GitHub Actions để test + lint + bảo mật?
+    <pre><code>jobs:
+  test:
+    steps:
+      - run: go fmt ./...
+      - run: go vet ./...
+      - run: golangci-lint run
+      - run: go test -cover ./...
+      - run: gosec ./...</code></pre>
+  </li>
+
+  <li>
+    <strong>Câu hỏi:</strong> Làm sao để Go binary build an toàn và nhỏ?
+    <pre><code>- Sử dụng go build static binary
+- Multi-stage Dockerfile
+- Set CGO_ENABLED=0 để build image scratch</code></pre>
+  </li>
+</ul>
+
 
 <hr />
 <h1 id="25-distributed-systems-redis-kafka-envoyproxy">25. Distributed Systems: Redis, Kafka, EnvoyProxy</h1>
@@ -2049,6 +4047,1275 @@ grpc_services:
   <li><strong>RBAC / AuthZ</strong>: chặn/cho phép request theo role, path, header</li>
   <li><strong>Access log</strong>: JSON log cho mọi request</li>
   <li><strong>Tracing</strong>: tích hợp Zipkin/Jaeger</li>
+</ul>
+
+<h2>🎯 Câu hỏi phỏng vấn – Mục 25: Distributed Systems (Redis, Kafka, Envoy)</h2>
+
+<h3>🔴 Redis</h3>
+
+<ul>
+  <li>
+    <strong>Q:</strong> Có những pattern caching phổ biến nào với Redis?
+    <pre><code>1. Cache Aside (lazy): chỉ cache khi miss → phổ biến nhất.
+2. Write-through: update cache + DB cùng lúc → đảm bảo nhất quán, nhưng tăng latency.
+3. Write-behind: ghi cache trước, flush về DB sau → hiệu suất cao nhưng dễ mất dữ liệu.
+4. Read-through: client chỉ gọi Redis, backend lo fallback → tăng coupling.</code></pre>
+  </li>
+
+  <li>
+    <strong>Q:</strong> Redis hỗ trợ những eviction policy nào? Khi nào nên dùng từng loại?
+    <pre><code>- noeviction: lỗi nếu đầy (thường dùng cho queue).
+- allkeys-lru: xóa key ít dùng nhất (default cho cache toàn hệ thống).
+- volatile-lru: như trên nhưng chỉ key có TTL.
+- volatile-ttl: xóa key sắp hết hạn nhất.
+- random: fallback nhẹ nếu workload không predictable.</code></pre>
+  </li>
+
+  <li>
+    <strong>Q:</strong> Redis Pub/Sub khác gì Redis Stream?
+    <pre><code>- Pub/Sub: không có backlog, chỉ gửi realtime → ai không subscribe thì mất.
+- Stream: có offset, consumer group, replay message được → phù hợp hệ thống event.</code></pre>
+  </li>
+
+  <li>
+    <strong>Q:</strong> Làm thế nào để implement distributed lock an toàn với Redis?
+    <pre><code>- Dùng SET key value NX EX 10
+- Kiểm tra value để tránh unlock nhầm (lock chỉ do 1 service sở hữu).
+- Nếu cần multi-node, nên dùng RedLock (cơ chế đồng thuận qua nhiều Redis instance).</code></pre>
+  </li>
+
+  <li>
+    <strong>Q:</strong> Những lỗi phổ biến khi dùng Redis là gì?
+    <pre><code>- Quên TTL → memory leak
+- Dùng KEYS * → gây block toàn Redis instance
+- Không handle cache stampede
+- Dùng Redis làm primary store thay vì cache</code></pre>
+  </li>
+</ul>
+
+<h3>📨 Kafka</h3>
+
+<ul>
+  <li>
+    <strong>Q:</strong> Kafka có thể đảm bảo thứ tự message không?
+    <pre><code>Có – nhưng chỉ trong 1 partition.
+→ Nếu cần toàn bộ message ordered, chúng phải đi cùng 1 key → 1 partition → không scale.</code></pre>
+  </li>
+
+  <li>
+    <strong>Q:</strong> Kafka scale consumer group như thế nào?
+    <pre><code>- Mỗi partition chỉ có 1 consumer active trong group.
+- Nếu số consumer > số partition → consumer thừa sẽ idle.
+→ Thiết kế partition count nên ≥ số consumer mong muốn.</code></pre>
+  </li>
+
+  <li>
+    <strong>Q:</strong> Giải thích các kiểu delivery: at-most-once, at-least-once, exactly-once?
+    <pre><code>- at-most-once: xử lý xong mới commit offset → an toàn, không mất, nhưng có thể duplicate.
+- at-least-once: commit trước xử lý → mất dữ liệu nếu fail.
+- exactly-once: cần bật idempotent producer + transaction API → phức tạp, latency cao.</code></pre>
+  </li>
+
+  <li>
+    <strong>Q:</strong> So sánh Kafka và RabbitMQ?
+    <pre><code>Kafka:
+- Log-based, giữ message lâu
+- High throughput, partition để scale
+- Phù hợp event sourcing, audit, analytics
+
+RabbitMQ:
+- Queue-based, push-based
+- Hàng đợi biến mất khi consumer ack
+- Phù hợp task queue, fanout realtime</code></pre>
+  </li>
+
+  <li>
+    <strong>Q:</strong> Khi nào cần cân nhắc số partition? Tác động là gì?
+    <pre><code>- Nhiều partition → tăng parallelism, throughput
+- Nhưng tăng overhead: file handle, memory, replica lag
+- Tăng partition không giảm latency nếu consumer không đủ</code></pre>
+  </li>
+
+  <li>
+    <strong>Q:</strong> Kafka có hỗ trợ delay queue không?
+    <pre><code>Không natively. Cần workaround như:
+- Gửi vào topic riêng có tên delay
+- Consumer filter thời gian
+- Dùng stream processor để delay message</code></pre>
+  </li>
+</ul>
+
+<h3>🌐 Envoy (Proxy, Gateway, Observability)</h3>
+
+<ul>
+  <li>
+    <strong>Q:</strong> Envoy hoạt động như thế nào trong hệ thống microservice?
+    <pre><code>Envoy là L7 proxy trung gian:
+- Làm load balancer nội bộ
+- Gắn auth, tracing, retry
+- Làm gRPC gateway hoặc sidecar proxy (service mesh)</code></pre>
+  </li>
+
+  <li>
+    <strong>Q:</strong> Các loại gRPC RPC có gì khác biệt?
+    <pre><code>- Unary: 1 request – 1 response
+- Server streaming: 1 req – stream res
+- Client streaming: stream req – 1 res
+- Bidirectional streaming: cả 2 chiều stream song song</code></pre>
+  </li>
+
+  <li>
+    <strong>Q:</strong> Interceptor trong gRPC là gì? Có bao nhiêu loại?
+    <pre><code>- Là middleware của gRPC
+- Unary Interceptor: apply cho RPC 1-1
+- Stream Interceptor: apply cho stream
+→ Dùng để logging, auth, tracing, panic recovery</code></pre>
+  </li>
+
+  <li>
+    <strong>Q:</strong> Envoy hỗ trợ retry & circuit breaker như thế nào?
+    <pre><code>- Retry: cấu hình timeout, backoff, retry on code
+- Circuit breaker: giới hạn concurrent conn, pending request
+→ Tránh overload backend khi lỗi</code></pre>
+  </li>
+
+  <li>
+    <strong>Q:</strong> Làm sao Envoy hỗ trợ tracing và logging tập trung?
+    <pre><code>- Truyền trace-id (x-request-id) từ upstream xuống
+- Tích hợp Zipkin/Jaeger → theo dõi xuyên microservice
+- Log structured JSON cho ELK / Loki / Datadog</code></pre>
+  </li>
+
+  <li>
+    <strong>Q:</strong> Envoy so với NGINX thì nên dùng cái nào?
+    <pre><code>Envoy:
+- Native HTTP/2, gRPC
+- Hot reload config, dynamic routing
+- Có built-in observability (metrics, trace)
+
+NGINX:
+- Hiệu năng cao
+- Phổ biến, nhưng cấu hình gRPC phức tạp
+→ Dùng Envoy cho hệ thống service mesh / gRPC-based</code></pre>
+  </li>
+</ul>
+
+<h2 id="mistake-1-interface-vs-nil">❌ Mistake #1 – So sánh interface với nil nhưng vẫn không bằng nil</h2>
+
+<p>Một trong những lỗi phổ biến và nguy hiểm nhất trong Go là so sánh một interface với <code>nil</code> và kỳ vọng rằng nó sẽ trả về <code>true</code>, nhưng thực tế lại trả về <code>false</code> – dẫn đến logic sai.</p>
+
+<h3>🧠 Giải thích</h3>
+<p>Interface trong Go gồm 2 phần: <strong>type</strong> và <strong>value</strong>. Khi bạn gán một con trỏ nil vào interface, nó vẫn giữ phần <code>type</code>, do đó toàn bộ interface không còn là <code>nil</code> nữa.</p>
+
+<pre><code class="go">// ❌ Sai: err không phải là nil
+type MyError struct{}
+
+func (e *MyError) Error() string { return "err" }
+
+func Do() error {
+    var e *MyError = nil
+    return e // ⚠️ interface error ≠ nil
+}
+
+func main() {
+    if Do() == nil {
+        fmt.Println("No error") // không in ra!
+    } else {
+        fmt.Println("Error detected") // in ra
+    }
+}
+</code></pre>
+
+<h3>✅ Cách fix</h3>
+<p>Luôn kiểm tra giá trị nil trước khi gán vào interface:</p>
+
+<pre><code class="go">func Do() error {
+    var e *MyError = nil
+    if e == nil {
+        return nil
+    }
+    return e
+}
+</code></pre>
+
+---
+
+<h3>🎯 Câu hỏi phỏng vấn</h3>
+<ul>
+  <li><strong>Q:</strong> Tại sao một con trỏ nil gán vào interface lại không phải là nil?</li>
+  <li><strong>Trả lời:</strong> Vì interface trong Go gồm (type, value). Khi gán nil pointer vào, <code>type ≠ nil</code> dù <code>value = nil</code>, nên toàn interface vẫn khác nil.</li>
+
+  <li><strong>Q:</strong> Làm sao để đảm bảo trả về error thực sự là nil?</li>
+  <li><strong>Trả lời:</strong> Phải kiểm tra giá trị trước khi return. Nếu là pointer nil → return nil trực tiếp thay vì return interface chứa pointer nil.</li>
+</ul>
+
+
+<h2 id="mistake-2-closure-trong-vòng-lặp">❌ Mistake #2 – Closure trong vòng lặp dùng sai biến loop</h2>
+
+<p>Lỗi phổ biến khi dùng <code>closure</code> (hàm ẩn danh) trong vòng lặp: tất cả closure "bắt" cùng một biến loop, dẫn đến giá trị sai lệch hoặc không đoán được.</p>
+
+<h3>🧠 Giải thích</h3>
+<p>Trong vòng lặp, biến <code>i</code> được cập nhật sau mỗi iteration. Nếu closure không tạo bản sao, tất cả goroutine sẽ truy cập cùng một biến — dẫn đến sai lệch giá trị hoặc race.</p>
+
+<pre><code class="go">// ❌ Sai: tất cả closure in ra cùng giá trị cuối cùng
+for i := 0; i < 3; i++ {
+    go func() {
+        fmt.Println(i)
+    }()
+}
+// Kết quả có thể: 3, 3, 3
+</code></pre>
+
+---
+
+<h3>✅ Cách fix: tạo bản sao biến vòng lặp</h3>
+
+<pre><code class="go">for i := 0; i < 3; i++ {
+    iCopy := i
+    go func() {
+        fmt.Println(iCopy) // In đúng 0, 1, 2
+    }()
+}
+</code></pre>
+
+<h3>✅ Hoặc truyền biến làm tham số cho closure</h3>
+
+<pre><code class="go">for i := 0; i < 3; i++ {
+    go func(val int) {
+        fmt.Println(val)
+    }(i)
+}
+</code></pre>
+
+---
+
+<h3>🎯 Câu hỏi phỏng vấn</h3>
+<ul>
+  <li><strong>Q:</strong> Tại sao tất cả goroutine in cùng một giá trị trong vòng lặp?</li>
+  <li><strong>Trả lời:</strong> Vì closure dùng biến <code>i</code> của vòng lặp, và <code>i</code> được thay đổi sau mỗi vòng → tất cả goroutine dùng chung biến này.</li>
+
+  <li><strong>Q:</strong> Cách tránh bug này?</li>
+  <li><strong>Trả lời:</strong> Tạo biến mới trong từng vòng lặp (shadowing) hoặc truyền biến đó vào func như tham số.</li>
+
+  <li><strong>Q:</strong> Đây là lỗi runtime hay compile-time?</li>
+  <li><strong>Trả lời:</strong> Là lỗi logic – compile vẫn chạy, nhưng kết quả không đúng → khó debug nếu không hiểu closure scope.</li>
+</ul>
+
+
+<h2 id="mistake-3-defer-trong-vòng-lặp">❌ Mistake #3 – Dùng defer trong vòng lặp gây giữ tài nguyên</h2>
+
+<p><code>defer</code> trong Go sẽ chỉ được thực thi khi hàm kết thúc. Nếu đặt defer trong vòng lặp (ví dụ khi mở file, DB, network...), bạn sẽ <strong>giữ tài nguyên đến cuối function</strong> thay vì giải phóng sau mỗi vòng lặp.</p>
+
+<h3>🧠 Giải thích</h3>
+<p>Go dùng mô hình <code>LIFO</code> cho defer: càng gọi defer sau thì thực thi càng trước. Nhưng nếu vòng lặp mở 100 file và đều defer close – thì tất cả 100 file chỉ được đóng ở cuối cùng → dễ gây <strong>file descriptor leak</strong>.</p>
+
+<pre><code class="go">// ❌ Sai: defer được hoãn đến hết vòng lặp → quá nhiều file mở
+for _, path := range files {
+    f, err := os.Open(path)
+    if err != nil {
+        continue
+    }
+    defer f.Close()
+    // xử lý file
+}
+</code></pre>
+
+---
+
+<h3>✅ Cách fix: gọi close ngay trong vòng lặp</h3>
+
+<pre><code class="go">for _, path := range files {
+    f, err := os.Open(path)
+    if err != nil {
+        continue
+    }
+
+    // dùng anonymous func để defer được thực thi đúng thời điểm
+    func() {
+        defer f.Close()
+        // xử lý file tại đây
+    }()
+}
+</code></pre>
+
+---
+
+<h3>🎯 Câu hỏi phỏng vấn</h3>
+<ul>
+  <li><strong>Q:</strong> Vì sao không nên dùng defer trong vòng lặp xử lý nhiều file hoặc connection?</li>
+  <li><strong>Trả lời:</strong> Vì defer chỉ chạy khi function kết thúc, nên nếu có nhiều iteration → tất cả resource (file, conn) bị giữ mở đến cuối.</li>
+
+  <li><strong>Q:</strong> Go thực thi defer theo thứ tự nào?</li>
+  <li><strong>Trả lời:</strong> LIFO – Last In First Out. Defer gọi sau sẽ được thực thi trước.</li>
+
+  <li><strong>Q:</strong> Giải pháp nào để vẫn dùng defer mà không giữ tài nguyên quá lâu?</li>
+  <li><strong>Trả lời:</strong> Đặt defer trong một closure (anonymous function) nội bộ mỗi vòng lặp – giúp thực thi defer ngay khi closure kết thúc.</li>
+</ul>
+
+
+<h2 id="mistake-4-truy-cập-map-từ-nhiều-goroutine">❌ Mistake #4 – Truy cập map từ nhiều goroutine không đồng bộ</h2>
+
+<p>Trong Go, <code>map</code> không thread-safe. Nếu bạn đọc/ghi map đồng thời từ nhiều goroutine mà không dùng đồng bộ hóa, chương trình có thể crash với lỗi <code>fatal error: concurrent map read and map write</code>.</p>
+
+<h3>🧠 Giải thích</h3>
+<p>Map trong Go được tối ưu cho hiệu năng đơn luồng. Khi có concurrent write hoặc mix read/write, nó có thể bị panic hoặc tạo ra race condition khó debug.</p>
+
+<pre><code class="go">// ❌ Sai: concurrent write gây panic
+m := make(map[string]int)
+
+for i := 0; i < 10; i++ {
+    go func(i int) {
+        key := fmt.Sprintf("k%d", i)
+        m[key] = i // Ghi đồng thời!
+    }(i)
+}
+</code></pre>
+
+---
+
+<h3>✅ Cách fix: dùng sync.Mutex hoặc sync.Map</h3>
+
+<pre><code class="go">// ✅ Cách 1: sync.Mutex
+var mu sync.Mutex
+m := make(map[string]int)
+
+for i := 0; i < 10; i++ {
+    go func(i int) {
+        key := fmt.Sprintf("k%d", i)
+        mu.Lock()
+        m[key] = i
+        mu.Unlock()
+    }(i)
+}
+</code></pre>
+
+<pre><code class="go">// ✅ Cách 2: sync.Map (map an toàn cho concurrent)
+var m sync.Map
+
+for i := 0; i < 10; i++ {
+    go func(i int) {
+        key := fmt.Sprintf("k%d", i)
+        m.Store(key, i)
+    }(i)
+}
+</code></pre>
+
+---
+
+<h3>🎯 Câu hỏi phỏng vấn</h3>
+<ul>
+  <li><strong>Q:</strong> Map trong Go có thread-safe không?</li>
+  <li><strong>Trả lời:</strong> Không. Ghi hoặc đọc/ghi đồng thời mà không khóa sẽ panic hoặc gây race condition.</li>
+
+  <li><strong>Q:</strong> Làm sao xử lý map an toàn khi dùng với nhiều goroutine?</li>
+  <li><strong>Trả lời:</strong> Dùng <code>sync.Mutex</code> để bảo vệ từng thao tác, hoặc <code>sync.Map</code> nếu workload phù hợp (rất nhiều read, ít write).</li>
+
+  <li><strong>Q:</strong> Khi nào nên dùng <code>sync.Map</code> thay vì <code>map + mutex</code>?</li>
+  <li><strong>Trả lời:</strong> Khi bạn có rất nhiều goroutine chỉ đọc hoặc update độc lập từng key, không cần full control logic.</li>
+</ul>
+
+
+<h2 id="mistake-4-truy-cập-map-từ-nhiều-goroutine">❌ Mistake #4 – Truy cập map từ nhiều goroutine không đồng bộ</h2>
+
+<p>Trong Go, <code>map</code> không thread-safe. Nếu bạn đọc/ghi map đồng thời từ nhiều goroutine mà không dùng đồng bộ hóa, chương trình có thể crash với lỗi <code>fatal error: concurrent map read and map write</code>.</p>
+
+<h3>🧠 Giải thích</h3>
+<p>Map trong Go được tối ưu cho hiệu năng đơn luồng. Khi có concurrent write hoặc mix read/write, nó có thể bị panic hoặc tạo ra race condition khó debug.</p>
+
+<pre><code class="go">// ❌ Sai: concurrent write gây panic
+m := make(map[string]int)
+
+for i := 0; i < 10; i++ {
+    go func(i int) {
+        key := fmt.Sprintf("k%d", i)
+        m[key] = i // Ghi đồng thời!
+    }(i)
+}
+</code></pre>
+
+---
+
+<h3>✅ Cách fix: dùng sync.Mutex hoặc sync.Map</h3>
+
+<pre><code class="go">// ✅ Cách 1: sync.Mutex
+var mu sync.Mutex
+m := make(map[string]int)
+
+for i := 0; i < 10; i++ {
+    go func(i int) {
+        key := fmt.Sprintf("k%d", i)
+        mu.Lock()
+        m[key] = i
+        mu.Unlock()
+    }(i)
+}
+</code></pre>
+
+<pre><code class="go">// ✅ Cách 2: sync.Map (map an toàn cho concurrent)
+var m sync.Map
+
+for i := 0; i < 10; i++ {
+    go func(i int) {
+        key := fmt.Sprintf("k%d", i)
+        m.Store(key, i)
+    }(i)
+}
+</code></pre>
+
+---
+
+<h3>🎯 Câu hỏi phỏng vấn</h3>
+<ul>
+  <li><strong>Q:</strong> Map trong Go có thread-safe không?</li>
+  <li><strong>Trả lời:</strong> Không. Ghi hoặc đọc/ghi đồng thời mà không khóa sẽ panic hoặc gây race condition.</li>
+
+  <li><strong>Q:</strong> Làm sao xử lý map an toàn khi dùng với nhiều goroutine?</li>
+  <li><strong>Trả lời:</strong> Dùng <code>sync.Mutex</code> để bảo vệ từng thao tác, hoặc <code>sync.Map</code> nếu workload phù hợp (rất nhiều read, ít write).</li>
+
+  <li><strong>Q:</strong> Khi nào nên dùng <code>sync.Map</code> thay vì <code>map + mutex</code>?</li>
+  <li><strong>Trả lời:</strong> Khi bạn có rất nhiều goroutine chỉ đọc hoặc update độc lập từng key, không cần full control logic.</li>
+</ul>
+
+
+<h2 id="mistake-5-goroutine-leak-không-listen-channel">❌ Mistake #5 – Goroutine leak vì không listen channel</h2>
+
+<p>Một goroutine gửi vào channel mà không có ai nhận, hoặc đang block chờ nhận mà channel không có ai gửi – sẽ bị <strong>block mãi mãi</strong>. Nếu điều này xảy ra hàng loạt trong production, sẽ gây leak tài nguyên hoặc deadlock toàn hệ thống.</p>
+
+<h3>🧠 Giải thích</h3>
+<p>Channel trong Go là <strong>synchronous</strong> nếu không có buffer. Nếu không có ai nhận (<code>&lt;-chan</code>) thì lệnh <code>chan &lt;- value</code> sẽ block. Nếu goroutine block mà không được cancel hoặc timeout, nó sẽ bị “rò rỉ”.</p>
+
+<pre><code class="go">// ❌ Sai – không có ai nhận từ ch, goroutine bị block mãi mãi
+ch := make(chan int)
+
+go func() {
+    ch <- 42 // bị block vì không ai đọc
+}()
+</code></pre>
+
+---
+
+<h3>✅ Cách fix #1: luôn đảm bảo có receiver</h3>
+
+<pre><code class="go">ch := make(chan int)
+
+go func() {
+    ch <- 42
+}()
+
+val := <-ch
+fmt.Println("Received:", val)
+</code></pre>
+
+<h3>✅ Cách fix #2: dùng channel có buffer (nếu async đơn giản)</h3>
+
+<pre><code class="go">ch := make(chan int, 1)
+
+go func() {
+    ch <- 42 // OK, vì có buffer
+}()
+</code></pre>
+
+<h3>✅ Cách fix #3: dùng context để huỷ goroutine nếu bị block lâu</h3>
+
+<pre><code class="go">ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+defer cancel()
+
+done := make(chan struct{})
+
+go func() {
+    select {
+    case <-time.After(10 * time.Second): // giả lập block
+        done <- struct{}{}
+    case <-ctx.Done():
+        fmt.Println("Goroutine canceled")
+    }
+}()
+</code></pre>
+
+---
+
+<h3>🎯 Câu hỏi phỏng vấn</h3>
+<ul>
+  <li><strong>Q:</strong> Điều gì xảy ra nếu một goroutine gửi vào channel mà không ai nhận?</li>
+  <li><strong>Trả lời:</strong> Goroutine sẽ bị block mãi mãi → gây leak và tăng số lượng goroutine trong runtime.</li>
+
+  <li><strong>Q:</strong> Làm sao tránh goroutine leak?</li>
+  <li><strong>Trả lời:</strong> Luôn đảm bảo:
+    <ul>
+      <li>Có người nhận từ channel (hoặc channel có buffer)</li>
+      <li>Goroutine được huỷ bằng context timeout hoặc cancel</li>
+    </ul>
+  </li>
+
+  <li><strong>Q:</strong> Dùng lệnh gì để debug số goroutine trong runtime?</li>
+  <li><strong>Trả lời:</strong> Dùng <code>runtime.NumGoroutine()</code> hoặc <code>pprof</code> để kiểm tra lượng goroutine hiện tại.</li>
+</ul>
+
+
+<h2 id="mistake-6-truyền-slice-mà-tưởng-rằng-copy">❌ Mistake #6 – Truyền slice mà tưởng rằng copy</h2>
+
+<p>Nhiều lập trình viên nghĩ rằng khi truyền một <code>slice</code> vào hàm, nó là copy độc lập. Thực ra, slice chỉ là “view” trên underlying array – tức là thay đổi slice cũng thay đổi dữ liệu gốc.</p>
+
+<h3>🧠 Giải thích</h3>
+<p>Slice trong Go gồm 3 phần: <code>pointer</code> tới mảng gốc, <code>length</code> và <code>capacity</code>. Khi truyền slice vào hàm, bạn chỉ copy phần “view”, không phải dữ liệu – nên mọi thay đổi sẽ ảnh hưởng gốc nếu dùng cùng underlying array.</p>
+
+<pre><code class="go">// ❌ Sai: tưởng rằng s2 là bản sao
+s1 := []int{1, 2, 3}
+s2 := s1
+s2[0] = 999
+
+fmt.Println(s1) // [999 2 3] – bị thay đổi theo!
+</code></pre>
+
+---
+
+<h3>✅ Cách fix: dùng copy() để tạo slice hoàn toàn mới</h3>
+
+<pre><code class="go">s1 := []int{1, 2, 3}
+s2 := make([]int, len(s1))
+copy(s2, s1)
+
+s2[0] = 999
+fmt.Println(s1) // [1 2 3] – an toàn
+</code></pre>
+
+---
+
+<h3>✅ Nếu muốn read-only: truyền slice và không modify</h3>
+
+<pre><code class="go">func printOnly(data []int) {
+    for _, v := range data {
+        fmt.Println(v)
+    }
+}
+</code></pre>
+
+---
+
+<h3>🎯 Câu hỏi phỏng vấn</h3>
+<ul>
+  <li><strong>Q:</strong> Khi truyền slice vào hàm, liệu có copy dữ liệu không?</li>
+  <li><strong>Trả lời:</strong> Không. Chỉ copy phần view (pointer + len + cap). Dữ liệu vẫn trỏ về mảng gốc.</li>
+
+  <li><strong>Q:</strong> Làm sao để clone slice thực sự?</li>
+  <li><strong>Trả lời:</strong> Dùng <code>copy(newSlice, oldSlice)</code> sau khi tạo slice mới bằng <code>make</code>.</li>
+
+  <li><strong>Q:</strong> Có khi nào 2 slice khác nhau nhưng trỏ về cùng underlying array?</li>
+  <li><strong>Trả lời:</strong> Có – nếu slice được cắt từ cùng một mảng hoặc slice cha. Điều này rất dễ gây bug ngầm nếu không cẩn thận.</li>
+</ul>
+
+<h2 id="mistake-7-dùng-value-receiver-khi-cần-pointer">❌ Mistake #7 – Dùng value receiver khi cần pointer</h2>
+
+<p>Khi method được khai báo với <code>value receiver</code>, mọi thay đổi trên struct trong method sẽ chỉ là bản sao – không ảnh hưởng dữ liệu gốc. Nếu bạn muốn mutate (thay đổi) giá trị trong method, bạn phải dùng <code>pointer receiver</code>.</p>
+
+<h3>🧠 Giải thích</h3>
+<p>Value receiver tạo bản sao của struct, mọi thao tác trên nó không làm thay đổi dữ liệu gốc.</p>
+
+<pre><code class="go">// ❌ Sai – name không thay đổi sau SetName
+type User struct {
+    Name string
+}
+
+func (u User) SetName(name string) {
+    u.Name = name
+}
+
+func main() {
+    u := User{}
+    u.SetName("Gopher")
+    fmt.Println(u.Name) // ""
+}
+</code></pre>
+
+---
+
+<h3>✅ Cách fix: dùng pointer receiver để mutate dữ liệu</h3>
+
+<pre><code class="go">func (u *User) SetName(name string) {
+    u.Name = name
+}
+
+func main() {
+    u := User{}
+    u.SetName("Gopher")
+    fmt.Println(u.Name) // "Gopher"
+}
+</code></pre>
+
+---
+
+<h3>🎯 Khi nào dùng pointer vs value receiver?</h3>
+<ul>
+  <li>Dùng <strong>pointer</strong> nếu:
+    <ul>
+      <li>Bạn cần thay đổi dữ liệu (mutate)</li>
+      <li>Struct có kích thước lớn → tránh copy tốn chi phí</li>
+    </ul>
+  </li>
+  <li>Dùng <strong>value</strong> nếu:
+    <ul>
+      <li>Struct nhỏ, thao tác đọc-only</li>
+      <li>Không muốn method gây side effect</li>
+    </ul>
+  </li>
+</ul>
+
+---
+
+<h3>🎯 Câu hỏi phỏng vấn</h3>
+<ul>
+  <li><strong>Q:</strong> Dùng value receiver trong method thì có mutate được dữ liệu không?</li>
+  <li><strong>Trả lời:</strong> Không. Value receiver hoạt động trên bản sao – mọi thay đổi không ảnh hưởng dữ liệu gốc.</li>
+
+  <li><strong>Q:</strong> Có thể gọi method pointer từ biến struct không?</li>
+  <li><strong>Trả lời:</strong> Có – Go tự động lấy địa chỉ khi cần. Bạn có thể gọi <code>u.SetName()</code> dù SetName là method dùng <code>*User</code>.</li>
+
+  <li><strong>Q:</strong> Nếu có mix pointer và value receiver trong cùng struct, có vấn đề gì không?</li>
+  <li><strong>Trả lời:</strong> Không compile lỗi, nhưng gây khó hiểu và bug tiềm ẩn. Nên thống nhất.</li>
+</ul>
+
+<h2 id="mistake-8-context-không-bị-cancel">❌ Mistake #8 – Không cancel context → goroutine leak</h2>
+
+<p>Go cho phép truyền <code>context.Context</code> để quản lý vòng đời goroutine. Nếu bạn tạo context có timeout/cancel nhưng không gọi <code>cancel()</code>, goroutine sẽ tiếp tục sống – gây leak tài nguyên và giữ connection không cần thiết.</p>
+
+<h3>🧠 Giải thích</h3>
+<p>Context là cơ chế tiêu chuẩn trong Go để huỷ các tác vụ dài hoặc không còn cần thiết. Nếu bạn không gọi <code>cancel()</code> với <code>WithCancel</code>, <code>WithTimeout</code>, hoặc <code>WithDeadline</code>, thì:</p>
+<ul>
+  <li>Goroutine sẽ chờ mãi</li>
+  <li>Socket hoặc DB không được đóng</li>
+  <li>Runtime có thể đầy goroutine mà bạn không kiểm soát</li>
+</ul>
+
+<pre><code class="go">// ❌ Sai – không gọi cancel
+ctx, _ := context.WithTimeout(context.Background(), 2*time.Second)
+go func() {
+    select {
+    case <-ctx.Done():
+        fmt.Println("done")
+    }
+}()
+</code></pre>
+
+---
+
+<h3>✅ Cách fix: luôn gọi cancel (bằng defer nếu có thể)</h3>
+
+<pre><code class="go">ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+defer cancel() // ✅ tránh leak
+
+go func() {
+    select {
+    case <-ctx.Done():
+        fmt.Println("done")
+    }
+}()
+</code></pre>
+
+---
+
+<h3>🎯 Câu hỏi phỏng vấn</h3>
+<ul>
+  <li><strong>Q:</strong> Điều gì xảy ra nếu bạn tạo context mà không cancel?</li>
+  <li><strong>Trả lời:</strong> Goroutine sử dụng context đó có thể không bao giờ được giải phóng → memory leak hoặc giữ tài nguyên quá lâu (DB, socket, HTTP).</li>
+
+  <li><strong>Q:</strong> Khi nào cần gọi <code>cancel()</code>?</li>
+  <li><strong>Trả lời:</strong> Ngay sau khi tạo context có cancel control (WithCancel, WithTimeout, WithDeadline). Nên dùng <code>defer cancel()</code> để đảm bảo.</li>
+
+  <li><strong>Q:</strong> Context propagation có hỗ trợ huỷ nhiều tầng không?</li>
+  <li><strong>Trả lời:</strong> Có. Khi một context cha bị huỷ, toàn bộ context con sẽ bị huỷ theo → rất quan trọng trong hệ thống microservice hoặc job processing.</li>
+</ul>
+
+<h2 id="mistake-9-panic-không-được-recover">❌ Mistake #9 – Panic không được recover đúng cách</h2>
+
+<p>Go không có try-catch như các ngôn ngữ khác. Thay vào đó, bạn phải dùng <code>panic</code>, <code>defer</code> và <code>recover()</code>. Nếu bạn không gọi <code>recover</code> đúng cách, panic sẽ crash toàn bộ chương trình – kể cả khi xảy ra trong 1 goroutine nhỏ.</p>
+
+<h3>🧠 Giải thích</h3>
+<p><code>recover()</code> chỉ hoạt động khi được gọi bên trong một <code>defer</code> trong cùng goroutine với panic. Nếu gọi ngoài <code>defer</code>, hoặc gọi trong goroutine khác → không có tác dụng.</p>
+
+<pre><code class="go">// ❌ Sai – panic không được recover → program crash
+func main() {
+    recover() // không có tác dụng
+    panic("BOOM")
+}
+</code></pre>
+
+---
+
+<h3>✅ Cách đúng: recover trong defer</h3>
+
+<pre><code class="go">func main() {
+    defer func() {
+        if r := recover(); r != nil {
+            fmt.Println("Đã recover từ panic:", r)
+        }
+    }()
+    panic("BOOM") // không crash
+}
+</code></pre>
+
+---
+
+<h3>✅ Recover goroutine riêng biệt</h3>
+
+<pre><code class="go">go func() {
+    defer func() {
+        if r := recover(); r != nil {
+            fmt.Println("Recovered in goroutine:", r)
+        }
+    }()
+    panic("panic trong goroutine")
+}()
+</code></pre>
+
+---
+
+<h3>🎯 Câu hỏi phỏng vấn</h3>
+<ul>
+  <li><strong>Q:</strong> Điều kiện để <code>recover()</code> hoạt động?</li>
+  <li><strong>Trả lời:</strong> Phải được gọi trong <code>defer</code> nằm trong cùng goroutine với panic. Nếu gọi ngoài defer hoặc trong goroutine khác, recover không có tác dụng.</li>
+
+  <li><strong>Q:</strong> Ứng dụng nào trong thực tế cần recover?</li>
+  <li><strong>Trả lời:</strong> Middleware HTTP (như gin, echo), worker job pool, consumer message queue – bất kỳ nơi nào bạn cần giữ server chạy ổn định dù gặp lỗi bất ngờ.</li>
+
+  <li><strong>Q:</strong> Recover có dừng được toàn bộ crash không?</li>
+  <li><strong>Trả lời:</strong> Có, nhưng phải dùng đúng cách. Nên log lại panic, traceID, và context để dễ debug. Tuyệt đối không “nuốt” lỗi trong silence.</li>
+</ul>
+
+<h2 id="mistake-10-type-assertion-không-check-ok">❌ Mistake #10 – Type assertion không check <code>ok</code></h2>
+
+<p>Khi dùng <code>interface{}</code>, để lấy giá trị thật, bạn phải dùng type assertion. Nếu bạn không kiểm tra <code>ok</code> khi ép kiểu và loại không khớp – chương trình sẽ panic.</p>
+
+<h3>🧠 Giải thích</h3>
+<p>Type assertion trong Go có 2 dạng:</p>
+<ul>
+  <li><code>val := i.(T)</code> → panic nếu <code>i</code> không chứa type <code>T</code></li>
+  <li><code>val, ok := i.(T)</code> → an toàn, không panic, kiểm tra được kết quả</li>
+</ul>
+
+<pre><code class="go">// ❌ Sai – không kiểm tra kiểu → panic nếu sai
+var i interface{} = "hello"
+n := i.(int) // panic: interface conversion: string is not int
+</code></pre>
+
+---
+
+<h3>✅ Cách fix: kiểm tra <code>ok</code></h3>
+
+<pre><code class="go">var i interface{} = "hello"
+n, ok := i.(int)
+if ok {
+    fmt.Println("Value:", n)
+} else {
+    fmt.Println("Sai kiểu: không phải int")
+}
+</code></pre>
+
+---
+
+<h3>✅ Dùng type switch nếu cần xử lý nhiều kiểu</h3>
+
+<pre><code class="go">switch v := i.(type) {
+case string:
+    fmt.Println("Chuỗi:", v)
+case int:
+    fmt.Println("Số nguyên:", v)
+default:
+    fmt.Println("Không xác định")
+}
+</code></pre>
+
+---
+
+<h3>🎯 Câu hỏi phỏng vấn</h3>
+<ul>
+  <li><strong>Q:</strong> Điều gì xảy ra nếu type assertion sai kiểu mà không check <code>ok</code>?</li>
+  <li><strong>Trả lời:</strong> Chương trình sẽ panic ngay – gây crash nếu không được recover.</li>
+
+  <li><strong>Q:</strong> Khi nào nên dùng type assertion?</li>
+  <li><strong>Trả lời:</strong> Khi bạn xử lý <code>interface{}</code> và biết trước kiểu. Nếu không chắc chắn → luôn check <code>ok</code> hoặc dùng type switch.</li>
+
+  <li><strong>Q:</strong> Có khác gì giữa <code>i.(T)</code> và <code>i.(*T)</code>?</li>
+  <li><strong>Trả lời:</strong> Không – đều là assertion về type. Nhưng bạn phải khớp exact type (pointer ≠ value).</li>
+</ul>
+
+<h2 id="mistake-11-slice-capacity-bị-giữ-ngầm">❌ Mistake #11 – Slice giữ capacity ngầm gây memory leak</h2>
+
+<p>Khi bạn cắt một slice từ một slice lớn hơn, bạn có thể vô tình giữ lại toàn bộ underlying array – dù bạn chỉ dùng một phần nhỏ. Điều này khiến bộ nhớ không được giải phóng → <strong>memory leak</strong> ngầm.</p>
+
+<h3>🧠 Giải thích</h3>
+<p>Slice trong Go trỏ về cùng underlying array. Khi bạn cắt slice con, phần còn lại của array vẫn được giữ trong bộ nhớ nếu bạn không tách riêng nó.</p>
+
+<pre><code class="go">// ❌ Sai – giữ cả array dù chỉ cần 1 phần
+data := make([]byte, 1000000)
+sub := data[:10] // sub giữ nguyên underlying array 1MB!
+process(sub)
+</code></pre>
+
+---
+
+<h3>✅ Cách fix: copy slice con ra slice mới</h3>
+
+<pre><code class="go">data := make([]byte, 1000000)
+sub := make([]byte, 10)
+copy(sub, data[:10]) // chỉ giữ 10 byte
+process(sub)
+</code></pre>
+
+---
+
+<h3>✅ Dùng append với nil slice cũng là cách tạo bản sao</h3>
+
+<pre><code class="go">sub := append([]byte(nil), data[:10]...)
+</code></pre>
+
+---
+
+<h3>🎯 Câu hỏi phỏng vấn</h3>
+<ul>
+  <li><strong>Q:</strong> Khi slice một mảng lớn, bạn có chắc bộ nhớ được giải phóng không?</li>
+  <li><strong>Trả lời:</strong> Không chắc. Nếu slice mới vẫn dùng cùng underlying array, phần còn lại vẫn bị giữ.</li>
+
+  <li><strong>Q:</strong> Làm sao đảm bảo slice không giữ bộ nhớ dư?</li>
+  <li><strong>Trả lời:</strong> Copy slice ra slice mới với <code>copy()</code> hoặc <code>append([]T(nil), ...)</code>.</li>
+
+  <li><strong>Q:</strong> Có tool nào giúp phát hiện lỗi này?</li>
+  <li><strong>Trả lời:</strong> Có – dùng <code>pprof</code> để xem heap profile hoặc <code>staticcheck</code> để cảnh báo slice aliasing.</li>
+</ul>
+
+
+<h2 id="mistake-12-ghi-map-ẩn-trong-json">❌ Mistake #12 – Map khi marshal JSON có thứ tự không xác định</h2>
+
+<p>Nhiều lập trình viên mong đợi rằng khi <code>json.Marshal</code> một map trong Go, kết quả sẽ giữ nguyên thứ tự key. Thực tế thì không – thứ tự <strong>không được đảm bảo</strong>, vì Go map là unordered by design.</p>
+
+<h3>🧠 Giải thích</h3>
+<p>Map trong Go được thiết kế là <strong>không có thứ tự</strong>. Mỗi lần bạn lặp qua map hoặc marshal JSON từ map, thứ tự key có thể khác nhau, thậm chí mỗi lần run sẽ khác nhau để chống phụ thuộc vào thứ tự.</p>
+
+<pre><code class="go">// ❌ Sai – thứ tự key không ổn định
+m := map[string]int{
+    "a": 1,
+    "b": 2,
+    "c": 3,
+}
+data, _ := json.Marshal(m)
+fmt.Println(string(data)) // có thể là {"b":2,"a":1,"c":3}
+</code></pre>
+
+---
+
+<h3>✅ Cách fix: dùng struct hoặc slice key-value có thứ tự</h3>
+
+<pre><code class="go">type Entry struct {
+    Key   string `json:"key"`
+    Value int    `json:"value"`
+}
+
+entries := []Entry{
+    {"a", 1},
+    {"b", 2},
+    {"c", 3},
+}
+data, _ := json.Marshal(entries)
+fmt.Println(string(data)) // [{"key":"a","value":1},...]
+</code></pre>
+
+---
+
+<h3>🎯 Câu hỏi phỏng vấn</h3>
+<ul>
+  <li><strong>Q:</strong> Tại sao map trong Go không có thứ tự?</li>
+  <li><strong>Trả lời:</strong> Vì map được thiết kế để optimize cho tốc độ truy cập, không phải cho iteration order – từ Go 1.12 trở đi còn deliberately randomized để tránh phụ thuộc.</li>
+
+  <li><strong>Q:</strong> Làm sao để giữ thứ tự khi marshal JSON từ dữ liệu map?</li>
+  <li><strong>Trả lời:</strong> Dùng struct slice, hoặc build <code>[]Entry</code> rồi marshal – bạn có toàn quyền kiểm soát thứ tự.</li>
+
+  <li><strong>Q:</strong> Có thể kiểm soát thứ tự trong map khi dùng <code>range</code> không?</li>
+  <li><strong>Trả lời:</strong> Không. Nếu cần, hãy sort key riêng và lặp theo key slice.</li>
+</ul>
+
+
+<h2 id="mistake-13-defer-có-thứ-tự-lifo">❌ Mistake #13 – Nhầm lẫn thứ tự thực thi defer (LIFO)</h2>
+
+<p>Nhiều lập trình viên nhầm tưởng các lệnh <code>defer</code> trong Go được thực thi theo thứ tự xuất hiện. Thực tế, <strong>defer được thực thi theo kiểu LIFO</strong> – Last In, First Out.</p>
+
+<h3>🧠 Giải thích</h3>
+<p>Mỗi khi Go gặp lệnh <code>defer</code>, nó push vào stack. Khi hàm kết thúc, các lệnh được pop ra và thực thi theo thứ tự ngược lại. Điều này cực kỳ quan trọng khi bạn cần release resource hoặc debug theo trace.</p>
+
+<pre><code class="go">// ❌ Nhầm tưởng in ra 1 → 2 → 3
+func main() {
+    defer fmt.Println("1")
+    defer fmt.Println("2")
+    defer fmt.Println("3")
+}
+// Kết quả thực tế: 3 → 2 → 1
+</code></pre>
+
+---
+
+<h3>✅ Ứng dụng đúng: xử lý resource, trace, rollback</h3>
+
+<pre><code class="go">defer unlock()
+defer log("done")
+defer rollback()
+</code></pre>
+
+<p>Thứ tự thực thi: rollback → log → unlock</p>
+
+---
+
+<h3>🎯 Câu hỏi phỏng vấn</h3>
+<ul>
+  <li><strong>Q:</strong> Defer được thực thi theo thứ tự nào?</li>
+  <li><strong>Trả lời:</strong> Theo nguyên tắc LIFO – lệnh <code>defer</code> gọi sau sẽ được thực thi trước.</li>
+
+  <li><strong>Q:</strong> Nếu trong nhiều defer có panic, chuyện gì xảy ra?</li>
+  <li><strong>Trả lời:</strong> Các defer trước panic vẫn chạy. Nhưng nếu panic xảy ra trong chính defer, chương trình sẽ crash nếu không recover.</li>
+
+  <li><strong>Q:</strong> Khi nào nên dùng nhiều defer?</li>
+  <li><strong>Trả lời:</strong> Khi bạn cần đóng nhiều tài nguyên theo thứ tự ngược lại lúc mở: file, lock, transaction, network stream…</li>
+</ul>
+
+
+<h2 id="mistake-14-buffered-channel-vẫn-deadlock">❌ Mistake #14 – Buffered channel vẫn có thể gây deadlock</h2>
+
+<p>Nhiều người nghĩ rằng <code>buffered channel</code> sẽ luôn tránh được deadlock. Thực tế, nếu số lượng gửi vượt quá buffer mà không có consumer kịp thời – chương trình vẫn sẽ <strong>block và deadlock</strong>.</p>
+
+<h3>🧠 Giải thích</h3>
+<p>Buffered channel chỉ cho phép <code>n</code> lệnh gửi không block (với <code>n</code> là buffer size). Sau đó, nếu không có người nhận, lệnh gửi tiếp theo sẽ block. Đây là behavior hoàn toàn giống như unbuffered channel sau khi đầy.</p>
+
+<pre><code class="go">// ❌ Sai – gửi quá buffer nhưng không có người nhận
+ch := make(chan int, 2)
+ch <- 1
+ch <- 2
+ch <- 3 // deadlock tại đây!
+</code></pre>
+
+---
+
+<h3>✅ Cách fix #1: tạo consumer kịp thời</h3>
+
+<pre><code class="go">ch := make(chan int, 2)
+
+go func() {
+    for v := range ch {
+        fmt.Println("Received:", v)
+    }
+}()
+
+ch <- 1
+ch <- 2
+ch <- 3
+close(ch)
+</code></pre>
+
+<h3>✅ Cách fix #2: không gửi quá mức buffer nếu không có receiver</h3>
+
+<pre><code class="go">if len(ch) < cap(ch) {
+    ch <- value
+}
+</code></pre>
+
+---
+
+<h3>🎯 Câu hỏi phỏng vấn</h3>
+<ul>
+  <li><strong>Q:</strong> Buffered channel có giúp tránh deadlock không?</li>
+  <li><strong>Trả lời:</strong> Không hoàn toàn. Nó chỉ giúp gửi không block <strong>tới giới hạn buffer</strong>. Sau đó vẫn block nếu không có receiver.</li>
+
+  <li><strong>Q:</strong> Làm sao để tránh deadlock với buffered channel?</li>
+  <li><strong>Trả lời:</strong> Luôn đảm bảo:
+    <ul>
+      <li>Có receiver chạy song song trước khi gửi</li>
+      <li>Không gửi vượt buffer nếu chưa chắc có người nhận</li>
+    </ul>
+  </li>
+
+  <li><strong>Q:</strong> Có nên dùng buffered channel như hàng đợi?</li>
+  <li><strong>Trả lời:</strong> Có – nhưng chỉ khi bạn kiểm soát tốt số lượng message và đảm bảo drain kịp thời.</li>
+</ul>
+
+<h2 id="mistake-15-pointer-trên-loop-variable">❌ Mistake #15 – Trỏ tới biến vòng lặp → tất cả trỏ cùng địa chỉ</h2>
+
+<p>Khi bạn dùng <code>range</code> và lấy địa chỉ của biến vòng lặp, tất cả pointer có thể trỏ về cùng một vùng nhớ – gây bug khó phát hiện vì dữ liệu bị ghi đè lên nhau.</p>
+
+<h3>🧠 Giải thích</h3>
+<p>Biến lặp <code>v</code> trong <code>for _, v := range slice</code> là biến được <strong>reuse</strong> qua mỗi vòng – không phải mỗi lần tạo biến mới. Khi bạn lấy địa chỉ <code>&v</code> → tất cả phần tử trong kết quả đều trỏ cùng địa chỉ.</p>
+
+<pre><code class="go">// ❌ Sai – tất cả p đều trỏ đến cùng 1 biến v
+s := []string{"a", "b", "c"}
+ptrs := []*string{}
+
+for _, v := range s {
+    ptrs = append(ptrs, &v)
+}
+
+for _, p := range ptrs {
+    fmt.Println(*p) // in "c", "c", "c"
+}
+</code></pre>
+
+---
+
+<h3>✅ Cách fix: tạo biến mới trong scope vòng lặp</h3>
+
+<pre><code class="go">for _, v := range s {
+    val := v
+    ptrs = append(ptrs, &val)
+}
+</code></pre>
+
+---
+
+<h3>🎯 Câu hỏi phỏng vấn</h3>
+<ul>
+  <li><strong>Q:</strong> Vì sao <code>&v</code> trong vòng lặp <code>range</code> không tạo pointer khác nhau?</li>
+  <li><strong>Trả lời:</strong> Vì <code>v</code> được reuse qua mỗi vòng – nó là 1 biến duy nhất. Tất cả pointer đều trỏ về cùng địa chỉ.</li>
+
+  <li><strong>Q:</strong> Cách nào để mỗi pointer trỏ đến đúng phần tử?</li>
+  <li><strong>Trả lời:</strong> Tạo biến mới trong thân vòng lặp (<code>val := v</code>) rồi lấy địa chỉ <code>&val</code>.</li>
+
+  <li><strong>Q:</strong> Dùng slice index trực tiếp để lấy địa chỉ thì có an toàn không?</li>
+  <li><strong>Trả lời:</strong> Có – <code>&s[i]</code> là địa chỉ phần tử thực trong slice, không bị ảnh hưởng bởi reuse.</li>
+</ul>
+
+
+<h2 id="mistake-16-lỗi-fmtprintf-sai-kiểu">❌ Mistake #16 – Dùng fmt.Printf sai kiểu định dạng</h2>
+
+<p>Go không kiểm tra kiểu định dạng `Printf` lúc compile, nhưng nếu bạn dùng sai định dạng (format specifier), output sẽ sai – hoặc tệ hơn là crash, gây lỗi runtime hoặc output không đọc được.</p>
+
+<h3>🧠 Giải thích</h3>
+<p>Các hàm như <code>fmt.Printf</code>, <code>fmt.Sprintf</code> dùng các định dạng như <code>%d</code> (int), <code>%s</code> (string), <code>%f</code> (float)... Nếu truyền nhầm kiểu – ví dụ <code>%d</code> mà truyền string – kết quả in ra sẽ sai hoặc panic trong các trường hợp nhất định.</p>
+
+<pre><code class="go">// ❌ Sai – truyền string cho %d
+name := "Gopher"
+fmt.Printf("Tên: %d\n", name) // runtime warning hoặc kết quả rác
+</code></pre>
+
+---
+
+<h3>✅ Cách fix: dùng đúng định dạng tương ứng với kiểu dữ liệu</h3>
+
+<pre><code class="go">fmt.Printf("Tên: %s\n", name) // ✅ đúng format
+</code></pre>
+
+---
+
+<h3>✅ Bật `go vet` để kiểm tra format sai kiểu</h3>
+
+<pre><code class="bash">go vet ./...
+# report: possible formatting directive mismatch
+</code></pre>
+
+---
+
+<h3>🎯 Câu hỏi phỏng vấn</h3>
+<ul>
+  <li><strong>Q:</strong> Điều gì xảy ra nếu dùng `%d` để in string?</li>
+  <li><strong>Trả lời:</strong> Output sai định dạng (in ra ASCII value hoặc giá trị không xác định), đôi khi là panic nếu kết hợp nhiều lỗi.</li>
+
+  <li><strong>Q:</strong> Làm sao kiểm tra lỗi kiểu định dạng khi dùng fmt?</li>
+  <li><strong>Trả lời:</strong> Dùng <code>go vet</code> hoặc <code>staticcheck</code>. Chúng phân tích và phát hiện mismatch giữa định dạng và type.</li>
+
+  <li><strong>Q:</strong> Có định dạng nào dùng được cho mọi kiểu?</li>
+  <li><strong>Trả lời:</strong> Có, dùng <code>%v</code> để in bất kỳ giá trị nào theo default format.</li>
+</ul>
+
+<h2 id="mistake-17-struct-tag-không-được-parser">❌ Mistake #17 – Struct tag sai định dạng nên bị bỏ qua</h2>
+
+<p>Nếu bạn viết sai cú pháp struct tag, Go không báo lỗi compile, nhưng các thư viện như <code>json.Marshal</code>, <code>gorm</code>, hoặc <code>yaml</code> sẽ silently ignore tag – dẫn đến dữ liệu không map đúng.</p>
+
+<h3>🧠 Giải thích</h3>
+<p>Struct tag trong Go là string định dạng đặc biệt, ví dụ: <code>`json:"field_name"`</code>. Nếu bạn quên dấu nháy kép hoặc viết nhầm kiểu, thư viện sẽ không map field đó.</p>
+
+<pre><code class="go">// ❌ Sai – thiếu dấu nháy kép → json bị ignore
+type User struct {
+    Name string `json:name` // không marshal được field "name"
+}
+</code></pre>
+
+---
+
+<h3>✅ Cách fix: dùng cú pháp tag chuẩn</h3>
+
+<pre><code class="go">type User struct {
+    Name string `json:"name"`
+}
+</code></pre>
+
+---
+
+<h3>✅ Nếu muốn bỏ qua field: dùng <code>`json:"-"`</code></h3>
+
+<pre><code class="go">Password string `json:"-"`
+</code></pre>
+
+---
+
+<h3>🎯 Câu hỏi phỏng vấn</h3>
+<ul>
+  <li><strong>Q:</strong> Điều gì xảy ra nếu bạn viết sai struct tag?</li>
+  <li><strong>Trả lời:</strong> Không có lỗi compile, nhưng thư viện sẽ không đọc được tag đó → field bị bỏ qua khi marshal/unmarshal.</li>
+
+  <li><strong>Q:</strong> Làm sao kiểm tra tag sai?</li>
+  <li><strong>Trả lời:</strong> Dùng linter như <code>staticcheck</code>, <code>golangci-lint</code> hoặc test trực tiếp với JSON để verify output.</li>
+
+  <li><strong>Q:</strong> Có thể viết nhiều tag cùng lúc không?</li>
+  <li><strong>Trả lời:</strong> Có. Dùng cách viết: <code>`json:"name" gorm:"column:name"`</code> – chú ý phải đúng định dạng & có khoảng trắng giữa các cặp.</li>
+</ul>
+
+
+<h2 id="mistake-18-sync-waitgroup-dùng-thiếu-done">❌ Mistake #18 – WaitGroup không gọi Done → block mãi mãi</h2>
+
+<p>Go cung cấp <code>sync.WaitGroup</code> để chờ các goroutine hoàn tất. Nhưng nếu bạn quên gọi <code>wg.Done()</code> sau khi goroutine chạy xong, lệnh <code>wg.Wait()</code> sẽ chờ mãi mãi → gây deadlock.</p>
+
+<h3>🧠 Giải thích</h3>
+<p>Khi bạn gọi <code>wg.Add(1)</code>, bạn phải đảm bảo tương ứng gọi <code>wg.Done()</code>. Nếu goroutine panic, return sớm hoặc gặp lỗi logic khiến <code>Done()</code> không được gọi → <code>Wait()</code> không bao giờ kết thúc.</p>
+
+<pre><code class="go">// ❌ Sai – quên gọi Done()
+var wg sync.WaitGroup
+
+wg.Add(1)
+go func() {
+    fmt.Println("run")
+    // thiếu wg.Done()
+}()
+
+wg.Wait() // block mãi mãi
+</code></pre>
+
+---
+
+<h3>✅ Cách fix: luôn dùng <code>defer wg.Done()</code> để đảm bảo an toàn</h3>
+
+<pre><code class="go">wg.Add(1)
+go func() {
+    defer wg.Done() // ✅ luôn đảm bảo được gọi
+    fmt.Println("run")
+}()
+</code></pre>
+
+---
+
+<h3>✅ Kiểm soát lỗi với recover() nếu goroutine có thể panic</h3>
+
+<pre><code class="go">go func() {
+    defer wg.Done()
+    defer func() {
+        if r := recover(); r != nil {
+            fmt.Println("panic recovered:", r)
+        }
+    }()
+    doSomethingRisky()
+}()
+</code></pre>
+
+---
+
+<h3>🎯 Câu hỏi phỏng vấn</h3>
+<ul>
+  <li><strong>Q:</strong> Điều gì xảy ra nếu bạn gọi <code>Wait()</code> mà thiếu <code>Done()</code>?</li>
+  <li><strong>Trả lời:</strong> Chương trình sẽ block mãi mãi, vì counter của WaitGroup không bao giờ về 0.</li>
+
+  <li><strong>Q:</strong> Tại sao nên dùng <code>defer wg.Done()</code> trong goroutine?</li>
+  <li><strong>Trả lời:</strong> Để đảm bảo <code>Done()</code> luôn được gọi – kể cả khi có panic hoặc return sớm.</li>
+
+  <li><strong>Q:</strong> WaitGroup có thread-safe không? Có thể gọi từ nhiều goroutine?</li>
+  <li><strong>Trả lời:</strong> Có – WaitGroup được thiết kế để gọi <code>Add</code>, <code>Done</code>, và <code>Wait</code> từ các goroutine khác nhau.</li>
+</ul>
+
+<h2 id="mistake-19-không-wrap-error-gốc">❌ Mistake #19 – Không wrap error → mất ngữ cảnh khi debug</h2>
+
+<p>Nếu bạn chỉ trả về lỗi gốc mà không wrap (gói) lại, bạn sẽ mất ngữ cảnh: lỗi xảy ra ở đâu, trong tình huống gì. Điều này khiến việc debug trong production trở nên cực kỳ khó khăn.</p>
+
+<h3>🧠 Giải thích</h3>
+<p>Go 1.13+ hỗ trợ wrap error bằng <code>fmt.Errorf(... %w ...)</code>. Điều này giúp bạn:</p>
+<ul>
+  <li>Giữ lỗi gốc (để dùng <code>errors.Is</code>, <code>errors.As</code>)</li>
+  <li>Thêm ngữ cảnh phía trên stack: function, service, param</li>
+  <li>Hiển thị lỗi có trace rõ ràng trong log</li>
+</ul>
+
+<pre><code class="go">// ❌ Sai – return lỗi thô, không rõ đến từ đâu
+if err := repo.Save(user); err != nil {
+    return err
+}
+</code></pre>
+
+---
+
+<h3>✅ Cách fix: wrap lỗi với ngữ cảnh</h3>
+
+<pre><code class="go">if err := repo.Save(user); err != nil {
+    return fmt.Errorf("user service: save failed: %w", err)
+}
+</code></pre>
+
+---
+
+<h3>✅ Dùng <code>errors.Is</code> và <code>errors.As</code> để phân tích chain lỗi</h3>
+
+<pre><code class="go">if errors.Is(err, sql.ErrNoRows) {
+    // xử lý lỗi cụ thể
+}
+</code></pre>
+
+---
+
+<h3>🎯 Câu hỏi phỏng vấn</h3>
+<ul>
+  <li><strong>Q:</strong> Vì sao nên wrap error thay vì return trực tiếp?</li>
+  <li><strong>Trả lời:</strong> Để giữ lỗi gốc và thêm ngữ cảnh mới. Điều này giúp trace được chuỗi call gây lỗi.</li>
+
+  <li><strong>Q:</strong> Sự khác biệt giữa <code>%w</code> và <code>%v</code> trong fmt.Errorf là gì?</li>
+  <li><strong>Trả lời:</strong> <code>%w</code> dùng để wrap error cho <code>errors.Is/As</code>. <code>%v</code> chỉ format chuỗi, không wrap được.</li>
+
+  <li><strong>Q:</strong> Nếu bạn wrap error nhiều lần, có mất lỗi gốc không?</li>
+  <li><strong>Trả lời:</strong> Không – bạn có thể unwrap chain nhiều tầng để tìm lỗi gốc bằng <code>errors.Unwrap()</code>.</li>
+</ul>
+
+<h2 id="mistake-20-shadow-biến-làm-hiểu-nhầm-logic">❌ Mistake #20 – Biến bị shadow trong block → bug ngầm</h2>
+
+<p>Trong Go, bạn có thể khai báo một biến mới trùng tên biến cũ trong phạm vi hẹp hơn. Điều này được gọi là <strong>variable shadowing</strong>. Nếu không cẩn thận, bạn sẽ thao tác sai biến mà không nhận ra.</p>
+
+<h3>🧠 Giải thích</h3>
+<p>Dấu <code>:=</code> trong Go sẽ khai báo biến mới nếu có ít nhất một biến chưa tồn tại trong scope hiện tại. Nếu bạn dùng lại tên biến cũ với <code>:=</code>, nó không cập nhật biến cũ – mà tạo biến mới trong scope mới → logic có thể sai hoàn toàn.</p>
+
+<pre><code class="go">// ❌ Sai – biến err bị shadow → log không đúng lỗi thật
+var err error
+if err := doSomething(); err != nil {
+    log.Println("error:", err) // OK
+}
+fmt.Println(err) // err ban đầu vẫn là nil!
+</code></pre>
+
+---
+
+<h3>✅ Cách fix: tách riêng biến mới hoặc dùng <code>=</code> nếu biến đã tồn tại</h3>
+
+<pre><code class="go">err = doSomething()
+if err != nil {
+    log.Println("error:", err)
+}
+</code></pre>
+
+---
+
+<h3>✅ Dùng linter để phát hiện shadow</h3>
+
+<pre><code class="bash">golangci-lint run --enable=shadow
+</code></pre>
+
+---
+
+<h3>🎯 Câu hỏi phỏng vấn</h3>
+<ul>
+  <li><strong>Q:</strong> Variable shadowing là gì? Có gây bug không?</li>
+  <li><strong>Trả lời:</strong> Là việc khai báo biến mới trùng tên với biến cũ trong block nhỏ hơn. Có thể gây bug vì tưởng rằng đang dùng biến ngoài nhưng thực chất là biến mới.</li>
+
+  <li><strong>Q:</strong> Làm sao để tránh bug do shadow biến?</li>
+  <li><strong>Trả lời:</strong> Dùng <code>=</code> nếu biến đã khai báo, tránh lặp <code>:=</code>. Bật linter như <code>shadow</code> để cảnh báo.</li>
+
+  <li><strong>Q:</strong> Lệnh <code>:=</code> hoạt động như thế nào?</li>
+  <li><strong>Trả lời:</strong> Nó sẽ khai báo biến mới nếu bất kỳ biến nào bên trái chưa có trong scope hiện tại. Ngược lại, nếu tất cả đã tồn tại → compile error.</li>
 </ul>
 
 
