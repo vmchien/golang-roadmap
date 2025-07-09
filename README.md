@@ -63,7 +63,7 @@ Build a comprehensive and well-structured self-learning material for mastering G
 
 ## 📌 Author
 
-- Repository: [github.com/tannova/golang-roadmap](https://github.com/tannova/golang-roadmap)  
-- Maintainer: `@tannova`
+- Repository: https://vmchien.github.io/golang-roadmap/
+- Maintainer: `@admin`
 
 ---
